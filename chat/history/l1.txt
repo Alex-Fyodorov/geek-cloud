@@ -1,0 +1,43 @@
+nick1
+/l nick1
+nick1: asfasdfs
+nick1: asdfdf
+nick1: asfasdf
+
+Новое подключение.
+/l nick1
+
+Новое подключение.
+/l nick1
+nick2 вошёл в чат.
+/l nick1 nick2
+nick2: sdfsdfgfg
+nick1: dsdsfgsfg
+
+Новое подключение.
+/l nick1
+nick1: asddfdf
+nick1: xcvsffg
+nick1: sdfgsfg
+nick1: sdfgsdfg
+nick2 вошёл в чат.
+/l nick1 nick2
+/l nick1
+nick2 вышел из чата.
+
+Новое подключение.
+/l nick1
+nick2 вошёл в чат.
+/l nick1 nick2
+nick2: hi!
+nick2: how are you&
+nick1: ok!
+nick3 вошёл в чат.
+/l nick1 nick2 nick3
+nick3 (личн.):  aksfhaksdfhasfkj
+Для nick3 (личн.):  fuck you
+/l nick1 nick2
+nick3 вышел из чата.
+/l nick1
+nick2 вышел из чата.
+/end
