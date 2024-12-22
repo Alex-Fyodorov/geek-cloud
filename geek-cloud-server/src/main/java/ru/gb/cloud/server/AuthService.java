@@ -15,29 +15,28 @@ public interface AuthService {
      */
     void stop();
 
-    /**
-     * Получить никнейм по логину/паролю.
-     * @param login
-     * @param pass
-     * @return никнейм, если найден, или null, если такого нет
-     */
-    String getNickByLoginAndPass(String login, String pass);
+//    /**
+//     * Получить никнейм по логину/паролю.
+//     * @param username
+//     * @param password
+//     * @return никнейм, если найден, или null, если такого нет
+//     */
+//    String getNickByLoginAndPass(String username, String password);
 
     /**
-     * Изменить nick.
-     * @param oldNick
-     * @param newNick
+     * Изменить пароль.
+     * @param username
+     * @param newPassword
      */
-    void changeNick(String oldNick, String newNick);
+    void changePassword(String username, String newPassword);
 
     /**
      * Создание нового аккаунта.
-     * @param login
-     * @param pass
-     * @param nick
+     * @param username
+     * @param password
      * @return true, если успешно.
      */
-    boolean createNewAccount(String login, String pass, String nick);
+    boolean createNewAccount(String username, String password);
 
     boolean authentification(String username, String password);
 }

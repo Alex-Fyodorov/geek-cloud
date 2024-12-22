@@ -5,25 +5,12 @@ import java.sql.*;
 public class DataBaseAuthService implements AuthService {
     private static Connection connection;
     private static Statement statement;
-    //private static ResultSet rsRead;
 
-    /**
-     * В этом методе помимо всего прочего хотел открыть переменную rsRead,
-     * (она используется в методе getNickByLoginAndPass), как об этом и
-     * говорили на лекции. Ведь если создавать аккаунты или менять ник
-     * пользователи будут нечасто, то заходить новые - постоянно.
-     * Поэтому смысла её каждый раз закрывать большого нет. Однако у меня
-     * не получилось. Инициализацию, открытую в методе start, метод
-     * getNickByLoginAndPass не видит. Я не стал всё удалять, просто
-     * закомментировал. Надеюсь на твоё объяснение.
-     */
     @Override
     public void start() {
         try {
             connection = DriverManager.getConnection("jdbc:sqlite:accounts.db");
             statement = connection.createStatement();
-            /*rsRead = statement.executeQuery("SELECT " +
-                    "login, password, nick FROM accounts");*/
             createTable();
         } catch (SQLException sq) {
             sq.printStackTrace();
@@ -32,14 +19,6 @@ public class DataBaseAuthService implements AuthService {
 
     @Override
     public void stop() {
-        /*try {
-            if (rsRead != null) {
-                rsRead.close();
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }*/
-
         try {
             if (statement != null) {
                 statement.close();
@@ -47,7 +26,6 @@ public class DataBaseAuthService implements AuthService {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-
         try {
             if (connection != null) {
                 connection.close();
@@ -57,39 +35,53 @@ public class DataBaseAuthService implements AuthService {
         }
     }
 
+//    @Override
+//    public boolean authentification(String username, String password) {
+//        try (ResultSet resultSet = statement.executeQuery("SELECT " +
+//                "* FROM accounts where username = " + username)) {
+//            resultSet.next();
+//            if (resultSet.getString("password").equals(password)) {
+//                return true;
+//            }
+//        } catch (SQLException e) {
+//            throw new RuntimeException(e);
+//        }
+//        return false;
+//    }
+
+    //TODO: Оптимизировать.
     @Override
-    public String getNickByLoginAndPass(String login, String pass) {
+    public boolean authentification(String username, String password) {
         try (ResultSet rsRead = statement.executeQuery("SELECT " +
-                "login, password, nick FROM accounts")) {
+                "username, password FROM accounts")) {
             while (rsRead.next()) {
-                if (rsRead.getString("login").equals(login) &&
-                rsRead.getString("password").equals(pass)) {
-                    return rsRead.getString("nick");
+                if (rsRead.getString("username").equals(username) &&
+                rsRead.getString("password").equals(password)) {
+                    return true;
                 }
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        return null;
+        return false;
     }
 
     private static void createTable() throws SQLException {
         statement.executeUpdate("CREATE TABLE IF NOT EXISTS accounts (\n" +
                 " id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n" +
-                " login TEXT NOT NULL UNIQUE,\n" +
-                " password TEXT NOT NULL,\n" +
-                " nick TEXT NOT NULL UNIQUE\n" +
+                " username TEXT NOT NULL UNIQUE,\n" +
+                " password TEXT NOT NULL\n" +
                 " );");
     }
 
+    //TODO: Сделать проверку на существующие логины.
     @Override
-    public boolean createNewAccount(String login, String pass, String nick) {
+    public boolean createNewAccount(String username, String password) {
         try (PreparedStatement ps = connection.prepareStatement(
-                "INSERT INTO accounts (login, password, nick) " +
-                        "VALUES (?, ?, ?)")){
-            ps.setString(1, login);
-            ps.setString(2, pass);
-            ps.setString(3, nick);
+                "INSERT INTO accounts (username, password) " +
+                        "VALUES (?, ?)")){
+            ps.setString(1, username);
+            ps.setString(2, password);
             ps.execute();
             return true;
         } catch (Exception ex) {
@@ -99,19 +91,14 @@ public class DataBaseAuthService implements AuthService {
     }
 
     @Override
-    public void changeNick(String oldNick, String newNick) {
+    public void changePassword(String username, String newPassword) {
         try (PreparedStatement ps = connection.prepareStatement(
-                "UPDATE accounts SET nick = ? WHERE nick = '" +
-                        oldNick + "';")) {
-            ps.setString(1, newNick);
+                "UPDATE accounts SET password = ? WHERE username = ?;")) {
+            ps.setString(1, newPassword);
+            ps.setString(2, username);
             ps.execute();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-    }
-
-    @Override
-    public boolean authentification(String username, String password) {
-        return false;
     }
 }

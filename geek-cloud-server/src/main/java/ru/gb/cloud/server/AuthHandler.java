@@ -77,16 +77,16 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                 buf.release();
             }
             if (username != null && password != null) {
-//                if (command == (byte) 11) {
-//                    if (authService.authentification(username, password)) {
-//                        System.out.println(true);
-//                    }
-//                }
-//                if (command == (byte) 12) {
-//                    if (authService.createNewAccount(username, password, "000")) {
-//                        System.out.println(true);
-//                    }
-//                }
+                if (command == (byte) 11) {
+                    if (authService.authentification(username, password)) {
+                        System.out.println("auth!!!!");
+                    }
+                }
+                if (command == (byte) 12) {
+                    if (authService.createNewAccount(username, password)) {
+                        System.out.println("create!!!!!");
+                    }
+                }
                 ctx.pipeline().addLast(new ProtoHandler(username));
                 ctx.fireChannelRead(buf);
                 ctx.pipeline().remove(this);
