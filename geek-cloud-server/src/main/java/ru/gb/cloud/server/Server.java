@@ -7,6 +7,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Server {
     public void run() throws Exception {
@@ -32,8 +34,11 @@ public class Server {
     }
 
     public static void main(String[] args) throws Exception {
-//        AuthService authService = new DataBaseAuthService();
-//        authService.start();
+        Logger logger = LogManager.getLogger(Server.class);
+
+        logger.info("начали");
+        AuthService authService = new DataBaseAuthService();
+        authService.start();
         new Server().run();
     }
 }
