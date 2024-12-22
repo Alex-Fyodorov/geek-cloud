@@ -29,5 +29,20 @@
             <artifactId>netty-all</artifactId>
             <version>4.1.115.Final</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.22.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.22.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.codenameone</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>7.0.163</version>
+        </dependency>
     </dependencies>
 </project>
