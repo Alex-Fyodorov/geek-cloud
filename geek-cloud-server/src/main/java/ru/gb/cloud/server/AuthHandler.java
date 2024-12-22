@@ -8,86 +8,92 @@ import java.io.BufferedOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class AuthHandler extends ChannelInboundHandlerAdapter {
 
+    Logger logger = LogManager.getLogger(AuthHandler.class);
+
     public enum State {
-        IDLE, NAME_LENGTH, NAME, FILE_LENGTH, FILE
+        IDLE, NAME_LENGTH, NAME, PASS_LENGTH, PASS
     }
 
-    private ProtoHandler.State currentState = ProtoHandler.State.IDLE;
+    private State currentState = State.IDLE;
+    private String username;
+    private String password;
+    private byte command;
     private int nextLength;
     private long fileLength;
     private long receivedFileLength;
-    private BufferedOutputStream out;
+    //private BufferedOutputStream out;
 
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf buf = (ByteBuf) msg;
         while (buf.readableBytes() > 0) {
-            byte command = buf.readByte();
-            if (command == (byte) 11) {
-
-            }
-        }
-
-
-
-
-        while (buf.readableBytes() > 0) {
-            if (currentState == ProtoHandler.State.IDLE) {
-                byte readed = buf.readByte();
-                if (readed == (byte) 25) {
-                    currentState = ProtoHandler.State.NAME_LENGTH;
-                    receivedFileLength = 0L;
-                    System.out.println("State: Start file receiving.");
+            if (currentState == State.IDLE) {
+                command = buf.readByte();
+                if (command == (byte) 11 || command == (byte) 12) {
+                    currentState = State.NAME_LENGTH;
+//                    receivedFileLength = 0L;
+//                    System.out.println("State: Start file receiving.");
                 } else {
-                    System.out.println("ERROR: Invalid first byte - " + readed);
+                    logger.info("ERROR: Invalid first byte - " + command);
                 }
             }
 
-            if (currentState == ProtoHandler.State.NAME_LENGTH) {
+            if (currentState == State.NAME_LENGTH) {
                 if (buf.readableBytes() >= 4) {
-                    System.out.println("State: Get filename length.");
                     nextLength = buf.readInt();
-                    currentState = ProtoHandler.State.NAME;
+                    currentState = State.NAME;
                 }
-
             }
 
-            if (currentState == ProtoHandler.State.NAME) {
+            if (currentState == State.NAME) {
                 if (buf.readableBytes() >= nextLength) {
-                    byte[] fileName = new byte[nextLength];
-                    buf.readBytes(fileName);
-                    System.out.println("State: Filename received: " +
-                            new String(fileName, StandardCharsets.UTF_8));
-                    out = new BufferedOutputStream(Files.newOutputStream(Paths.get(
-                            "./geek-cloud-server/src/main/java/ru/gb/cloud/server/" +
-                                    new String(fileName, StandardCharsets.UTF_8))));
-                    currentState = ProtoHandler.State.FILE_LENGTH;
+                    byte[] usernameBytes = new byte[nextLength];
+                    buf.readBytes(usernameBytes);
+//                    System.out.println("State: Filename received: " +
+//                            new String(fileName, StandardCharsets.UTF_8));
+//                    out = new BufferedOutputStream(Files.newOutputStream(Paths.get(
+//                            "./geek-cloud-server/src/main/java/ru/gb/cloud/server/" +
+//                                    new String(fileName, StandardCharsets.UTF_8))));
+                    username = new String(usernameBytes, StandardCharsets.UTF_8);
+                    currentState = State.PASS_LENGTH;
                 }
 
             }
 
-            if (currentState == ProtoHandler.State.FILE_LENGTH) {
-                if (buf.readableBytes() >= 8) {
-                    fileLength = buf.readLong();
-                    System.out.println("State: File length: " + fileLength);
-                    currentState = ProtoHandler.State.FILE;
+            if (currentState == State.PASS_LENGTH) {
+                if (buf.readableBytes() >= 4) {
+                    nextLength = buf.readInt();
+                    currentState = State.PASS;
                 }
             }
 
-            if (currentState == ProtoHandler.State.FILE) {
-                while (buf.readableBytes() > 0) {
-                    out.write(buf.readByte());
-                    receivedFileLength++;
-                    if (fileLength == receivedFileLength) {
-                        currentState = ProtoHandler.State.IDLE;
-                        System.out.println("File received");
-                        out.close();
-                        break;
-                    }
+            if (currentState == State.PASS) {
+                if (buf.readableBytes() >= nextLength) {
+                    byte[] passBytes = new byte[nextLength];
+                    buf.readBytes(passBytes);
+//                    System.out.println("State: Filename received: " +
+//                            new String(fileName, StandardCharsets.UTF_8));
+//                    out = new BufferedOutputStream(Files.newOutputStream(Paths.get(
+//                            "./geek-cloud-server/src/main/java/ru/gb/cloud/server/" +
+//                                    new String(fileName, StandardCharsets.UTF_8))));
+                    password = new String(passBytes, StandardCharsets.UTF_8);
+                    currentState = State.IDLE;
+                    break;
+
+//                    out.write(buf.readByte());
+//                    receivedFileLength++;
+//                    if (fileLength == receivedFileLength) {
+//                        currentState = State.IDLE;
+//                        System.out.println("File received");
+//                        out.close();
+//
+//                    }
                 }
             }
 
@@ -95,6 +101,8 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                 buf.release();
             }
         }
+        System.out.println(username);
+        System.out.println(password);
     }
 
     @Override

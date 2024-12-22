@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Server {
+    Logger logger = LogManager.getLogger(Server.class);
     public void run() throws Exception {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -21,11 +22,12 @@ public class Server {
                     .childHandler( new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) {
-                            ch.pipeline().addLast(new ProtoHandler());
+                            ch.pipeline().addLast(new AuthHandler());
                         }
                     });
             //.childOption(ChannelOption.SO_KEEPALIVE, true);
             ChannelFuture future = serverBootstrap.bind(8189).sync();
+            logger.info("The server is waiting for connection.");
             future.channel().closeFuture().sync();
         } finally {
             workerGroup.shutdownGracefully();
@@ -34,9 +36,6 @@ public class Server {
     }
 
     public static void main(String[] args) throws Exception {
-        Logger logger = LogManager.getLogger(Server.class);
-
-        logger.info("начали");
         AuthService authService = new DataBaseAuthService();
         authService.start();
         new Server().run();
