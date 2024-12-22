@@ -37,7 +37,7 @@ public interface AuthService {
      * @param nick
      * @return true, если успешно.
      */
-    boolean newAccount(String login, String pass, String nick);
+    boolean createNewAccount(String login, String pass, String nick);
 
-    boolean authentification(String login, String password);
+    boolean authentification(String username, String password);
 }

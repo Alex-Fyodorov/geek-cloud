@@ -3,15 +3,17 @@ package ru.gb.cloud.server;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-
-import java.io.BufferedOutputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.nio.charset.StandardCharsets;
+
 public class AuthHandler extends ChannelInboundHandlerAdapter {
+    private final AuthService authService;
+
+    public AuthHandler(AuthService authService) {
+        this.authService = authService;
+    }
 
     Logger logger = LogManager.getLogger(AuthHandler.class);
 
@@ -24,10 +26,6 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
     private String password;
     private byte command;
     private int nextLength;
-    private long fileLength;
-    private long receivedFileLength;
-    //private BufferedOutputStream out;
-
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -37,8 +35,6 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                 command = buf.readByte();
                 if (command == (byte) 11 || command == (byte) 12) {
                     currentState = State.NAME_LENGTH;
-//                    receivedFileLength = 0L;
-//                    System.out.println("State: Start file receiving.");
                 } else {
                     logger.info("ERROR: Invalid first byte - " + command);
                 }
@@ -55,11 +51,6 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                 if (buf.readableBytes() >= nextLength) {
                     byte[] usernameBytes = new byte[nextLength];
                     buf.readBytes(usernameBytes);
-//                    System.out.println("State: Filename received: " +
-//                            new String(fileName, StandardCharsets.UTF_8));
-//                    out = new BufferedOutputStream(Files.newOutputStream(Paths.get(
-//                            "./geek-cloud-server/src/main/java/ru/gb/cloud/server/" +
-//                                    new String(fileName, StandardCharsets.UTF_8))));
                     username = new String(usernameBytes, StandardCharsets.UTF_8);
                     currentState = State.PASS_LENGTH;
                 }
@@ -77,32 +68,31 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                 if (buf.readableBytes() >= nextLength) {
                     byte[] passBytes = new byte[nextLength];
                     buf.readBytes(passBytes);
-//                    System.out.println("State: Filename received: " +
-//                            new String(fileName, StandardCharsets.UTF_8));
-//                    out = new BufferedOutputStream(Files.newOutputStream(Paths.get(
-//                            "./geek-cloud-server/src/main/java/ru/gb/cloud/server/" +
-//                                    new String(fileName, StandardCharsets.UTF_8))));
                     password = new String(passBytes, StandardCharsets.UTF_8);
                     currentState = State.IDLE;
-                    break;
-
-//                    out.write(buf.readByte());
-//                    receivedFileLength++;
-//                    if (fileLength == receivedFileLength) {
-//                        currentState = State.IDLE;
-//                        System.out.println("File received");
-//                        out.close();
-//
-//                    }
                 }
             }
 
             if (buf.readableBytes() == 0) {
                 buf.release();
             }
+            if (username != null && password != null) {
+//                if (command == (byte) 11) {
+//                    if (authService.authentification(username, password)) {
+//                        System.out.println(true);
+//                    }
+//                }
+//                if (command == (byte) 12) {
+//                    if (authService.createNewAccount(username, password, "000")) {
+//                        System.out.println(true);
+//                    }
+//                }
+                ctx.pipeline().addLast(new ProtoHandler(username));
+                ctx.fireChannelRead(buf);
+                ctx.pipeline().remove(this);
+                break;
+            }
         }
-        System.out.println(username);
-        System.out.println(password);
     }
 
     @Override

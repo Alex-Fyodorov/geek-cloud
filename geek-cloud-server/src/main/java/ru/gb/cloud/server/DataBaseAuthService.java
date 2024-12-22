@@ -83,7 +83,7 @@ public class DataBaseAuthService implements AuthService {
     }
 
     @Override
-    public boolean newAccount(String login, String pass, String nick) {
+    public boolean createNewAccount(String login, String pass, String nick) {
         try (PreparedStatement ps = connection.prepareStatement(
                 "INSERT INTO accounts (login, password, nick) " +
                         "VALUES (?, ?, ?)")){
@@ -111,7 +111,7 @@ public class DataBaseAuthService implements AuthService {
     }
 
     @Override
-    public boolean authentification(String login, String password) {
+    public boolean authentification(String username, String password) {
         return false;
     }
 }

@@ -12,7 +12,7 @@ import org.apache.logging.log4j.Logger;
 
 public class Server {
     Logger logger = LogManager.getLogger(Server.class);
-    public void run() throws Exception {
+    public void run(AuthService authService) throws Exception {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
@@ -22,7 +22,7 @@ public class Server {
                     .childHandler( new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) {
-                            ch.pipeline().addLast(new AuthHandler());
+                            ch.pipeline().addLast(new AuthHandler(authService));
                         }
                     });
             //.childOption(ChannelOption.SO_KEEPALIVE, true);
@@ -38,6 +38,6 @@ public class Server {
     public static void main(String[] args) throws Exception {
         AuthService authService = new DataBaseAuthService();
         authService.start();
-        new Server().run();
+        new Server().run(authService);
     }
 }

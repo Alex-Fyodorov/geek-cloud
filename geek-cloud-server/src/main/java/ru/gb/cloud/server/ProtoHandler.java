@@ -10,6 +10,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class ProtoHandler extends ChannelInboundHandlerAdapter {
+    private String username;
+
+    public ProtoHandler(String username) {
+        this.username = username;
+    }
+
     public enum State {
         IDLE, NAME_LENGTH, NAME, FILE_LENGTH, FILE
     }
