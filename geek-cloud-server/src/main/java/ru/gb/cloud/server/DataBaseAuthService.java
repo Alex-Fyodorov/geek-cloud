@@ -35,21 +35,6 @@ public class DataBaseAuthService implements AuthService {
         }
     }
 
-//    @Override
-//    public boolean authentification(String username, String password) {
-//        try (ResultSet resultSet = statement.executeQuery("SELECT " +
-//                "* FROM accounts where username = " + username)) {
-//            resultSet.next();
-//            if (resultSet.getString("password").equals(password)) {
-//                return true;
-//            }
-//        } catch (SQLException e) {
-//            throw new RuntimeException(e);
-//        }
-//        return false;
-//    }
-
-    //TODO: Оптимизировать.
     @Override
     public boolean authentification(String username, String password) {
         try (ResultSet rsRead = statement.executeQuery("SELECT " +
@@ -74,7 +59,6 @@ public class DataBaseAuthService implements AuthService {
                 " );");
     }
 
-    //TODO: Сделать проверку на существующие логины.
     @Override
     public boolean createNewAccount(String username, String password) {
         try (PreparedStatement ps = connection.prepareStatement(
@@ -84,10 +68,9 @@ public class DataBaseAuthService implements AuthService {
             ps.setString(2, password);
             ps.execute();
             return true;
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (SQLException e) {
+            return false;
         }
-        return false;
     }
 
     @Override

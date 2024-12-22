@@ -15,14 +15,6 @@ public interface AuthService {
      */
     void stop();
 
-//    /**
-//     * Получить никнейм по логину/паролю.
-//     * @param username
-//     * @param password
-//     * @return никнейм, если найден, или null, если такого нет
-//     */
-//    String getNickByLoginAndPass(String username, String password);
-
     /**
      * Изменить пароль.
      * @param username

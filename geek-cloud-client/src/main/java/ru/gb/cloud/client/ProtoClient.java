@@ -9,7 +9,7 @@ public class ProtoClient {
         new Thread(() -> Network.getInstance().start(networkStarter)).start();
         networkStarter.await();
 
-        AuthSender.sendFile("Вася", "Пароль", Network.getInstance().getCurrentChannel());
+        AuthSender.sendFile("Vasya", "Pass", Network.getInstance().getCurrentChannel());
 
 //        ProtoFileSender.sendFile(Paths.get("./chat/space.png"),
 //                Network.getInstance().getCurrentChannel(), future -> {

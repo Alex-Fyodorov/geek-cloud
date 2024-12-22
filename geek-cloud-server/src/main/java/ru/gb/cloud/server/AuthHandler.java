@@ -85,6 +85,8 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                 if (command == (byte) 12) {
                     if (authService.createNewAccount(username, password)) {
                         System.out.println("create!!!!!");
+                    } else {
+                        System.out.println("not create!!!!!");
                     }
                 }
                 ctx.pipeline().addLast(new ProtoHandler(username));
