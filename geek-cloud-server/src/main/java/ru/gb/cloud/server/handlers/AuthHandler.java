@@ -5,7 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.gb.cloud.common.CommandsForServer;
+import ru.gb.cloud.common.CommandForServer;
 import ru.gb.cloud.server.constants.OutMessageType;
 import ru.gb.cloud.server.databases.AuthService;
 
@@ -28,7 +28,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
     }
 
     private State currentState = State.IDLE;
-    private CommandsForServer messageType = CommandsForServer.IDLE;
+    private CommandForServer messageType = CommandForServer.IDLE;
     private String username;
     private String password;
     private int nextLength;
@@ -40,8 +40,8 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
             while (buf.readableBytes() > 0) {
                 if (currentState == State.IDLE) {
                     byte firstByte = buf.readByte();
-                    messageType = CommandsForServer.getDataTypeFromByte(firstByte);
-                    if (messageType == CommandsForServer.AUTH || messageType == CommandsForServer.REG) {
+                    messageType = CommandForServer.getDataTypeFromByte(firstByte);
+                    if (messageType == CommandForServer.AUTH || messageType == CommandForServer.REG) {
                         currentState = State.NAME_LENGTH;
                     } else {
                         logger.info("ERROR: Invalid first byte - " + firstByte);
@@ -85,7 +85,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                 }
 
                 if (username != null && password != null) {
-                    if (messageType == CommandsForServer.AUTH) {
+                    if (messageType == CommandForServer.AUTH) {
                         if (authService.authentification(username, password)) {
                             logger.info("The client " + username + " has connected.");
                             ctx.writeAndFlush(String.format("%sWelcome %s!", OutMessageType.MESSAGE, username));
@@ -97,7 +97,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                             ctx.writeAndFlush(String.format("%sIncorrect username or password.", OutMessageType.MESSAGE));
                         }
                     }
-                    if (messageType == CommandsForServer.REG) {
+                    if (messageType == CommandForServer.REG) {
                         if (authService.createNewAccount(username, password)) {
                             logger.info("A new client named " + username + " has signed up.");
                             ctx.writeAndFlush(String.format("%sWelcome %s!", OutMessageType.MESSAGE, username));

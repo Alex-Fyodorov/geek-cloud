@@ -5,7 +5,7 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.gb.cloud.common.CommandsForClient;
+import ru.gb.cloud.common.CommandForClient;
 import ru.gb.cloud.server.constants.OutMessageType;
 
 import java.io.File;
@@ -32,7 +32,7 @@ public class OutServerHandler extends ChannelOutboundHandlerAdapter {
             String message = (String) msg;
             if (message.startsWith(OutMessageType.MESSAGE)) {
                 message = message.substring(OutMessageType.MESSAGE.length());
-                sendText(ctx, message, CommandsForClient.MESSAGE);
+                sendText(ctx, message, CommandForClient.MESSAGE);
             }
 
             if (message.startsWith(OutMessageType.LIST)) {
@@ -45,9 +45,9 @@ public class OutServerHandler extends ChannelOutboundHandlerAdapter {
                         stringBuilder.append(" ");
                     }
                     stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-                    sendText(ctx, stringBuilder.toString(), CommandsForClient.FILE_LIST);
+                    sendText(ctx, stringBuilder.toString(), CommandForClient.FILE_LIST);
                 } else {
-                    sendText(ctx, "", CommandsForClient.FILE_LIST);
+                    sendText(ctx, "", CommandForClient.FILE_LIST);
                 }
             }
 
@@ -58,7 +58,7 @@ public class OutServerHandler extends ChannelOutboundHandlerAdapter {
                     FileRegion region = new DefaultFileRegion(path.toFile(), 0, Files.size(path));
                     byte[] fileNameBytes = path.getFileName().toString().getBytes(StandardCharsets.UTF_8);
                     ByteBuf buf = ByteBufAllocator.DEFAULT.directBuffer(1 + 4 + fileNameBytes.length + 8);
-                    buf.writeByte(CommandsForClient.FILE.getFirstMessageByte());
+                    buf.writeByte(CommandForClient.FILE.getFirstMessageByte());
                     buf.writeInt(path.getFileName().toString().length());
                     buf.writeBytes(fileNameBytes);
                     buf.writeLong(Files.size(path));
@@ -80,7 +80,7 @@ public class OutServerHandler extends ChannelOutboundHandlerAdapter {
         });
     }
 
-    private void sendText(ChannelHandlerContext ctx, String message, CommandsForClient command) {
+    private void sendText(ChannelHandlerContext ctx, String message, CommandForClient command) {
         byte[] messageBytes = message.getBytes();
         ByteBuf byteBuf = ctx.alloc().buffer(1 + 4 + messageBytes.length);
         byteBuf.writeByte(command.getFirstMessageByte());

@@ -1,6 +1,6 @@
 package ru.gb.cloud.common;
 
-public enum CommandsForServer {
+public enum CommandForServer {
     IDLE((byte) -1),
     AUTH((byte) 11),
     REG((byte) 12),
@@ -16,11 +16,11 @@ public enum CommandsForServer {
         return firstMessageByte;
     }
 
-    CommandsForServer(byte firstMessageByte) {
+    CommandForServer(byte firstMessageByte) {
         this.firstMessageByte = firstMessageByte;
     }
 
-    public static CommandsForServer getDataTypeFromByte(byte b) {
+    public static CommandForServer getDataTypeFromByte(byte b) {
         if (b == AUTH.firstMessageByte) return AUTH;
         if (b == REG.firstMessageByte) return REG;
         if (b == SEND.firstMessageByte) return SEND;

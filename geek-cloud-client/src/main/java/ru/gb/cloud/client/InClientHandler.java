@@ -5,6 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import ru.gb.cloud.common.CommandForClient;
 
 import java.nio.charset.StandardCharsets;
 
@@ -17,9 +18,9 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
     }
 
     private State currentState = State.IDLE;
+    private CommandForClient command;
     private String username;
     private String password;
-    private byte command;
     private int nextLength;
 
     @Override
@@ -27,11 +28,12 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
         ByteBuf buf = (ByteBuf) msg;
         while (buf.readableBytes() > 0) {
             if (currentState == State.IDLE) {
-                command = buf.readByte();
-                if (command == (byte) 11 || command == (byte) 21) {
+                byte firstByte = buf.readByte();
+                if (checkFirstByte(firstByte)) {
+                    command = CommandForClient.getDataTypeFromByte(firstByte);
                     currentState = State.MSG_LENGTH;
                 } else {
-                    logger.info("ERROR: Invalid first byte - " + command);
+                    logger.info("ERROR: Invalid first byte - " + firstByte);
                 }
             }
 
@@ -48,9 +50,16 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
                     buf.readBytes(messageBytes);
                     String message = new String(messageBytes, StandardCharsets.UTF_8);
                     System.out.println(message);
-                    currentState = State.IDLE;
                 }
+            }
 
+            if (command == CommandForClient.FILE) {
+                currentState = State.FILE_LENGTH;
+            } else if (command == CommandForClient.FILE_LIST) {
+                currentState = State.IDLE;
+            } else if (command == CommandForClient.MESSAGE) {
+                currentState = State.IDLE;
+            }
 //                while (buf.readableBytes() > 0) {
 //                    out.write(buf.readByte());
 //                    receivedFileLength++;
@@ -62,7 +71,7 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
 //                    }
 //                }
 
-            }
+
 
 //            if (currentState == State.MESSAGE) {
 //                if (buf.readableBytes() >= nextLength) {
@@ -94,6 +103,13 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
                 buf.release();
             }
         }
+    }
+
+    private boolean checkFirstByte(byte firstByte) {
+        if (firstByte == CommandForClient.MESSAGE.getFirstMessageByte()) return true;
+        if (firstByte == CommandForClient.FILE_LIST.getFirstMessageByte()) return true;
+        if (firstByte == CommandForClient.FILE.getFirstMessageByte()) return true;
+        return false;
     }
 
     @Override
