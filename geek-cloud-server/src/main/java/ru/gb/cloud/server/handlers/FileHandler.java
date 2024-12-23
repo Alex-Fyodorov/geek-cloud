@@ -11,11 +11,11 @@ import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ProtoHandler extends ChannelInboundHandlerAdapter {
+public class FileHandler extends ChannelInboundHandlerAdapter {
     private final String username;
     private final ExecutorService executorService;
 
-    public ProtoHandler(String username) {
+    public FileHandler(String username) {
         this.username = username;
         executorService = Executors.newSingleThreadExecutor();
     }

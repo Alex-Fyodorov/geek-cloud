@@ -12,8 +12,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class AuthHandler extends ChannelInboundHandlerAdapter {
     private final AuthService authService;
@@ -60,7 +58,6 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                 if (currentState == State.IDLE) {
                     byte firstByte = buf.readByte();
                     messageType = MessageType.getDataTypeFromByte(firstByte);
-                    System.out.println(messageType.toString());
                     if (messageType == MessageType.AUTH || messageType == MessageType.REG) {
                         currentState = State.NAME_LENGTH;
                     } else {
@@ -82,7 +79,6 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                         username = new String(usernameBytes, StandardCharsets.UTF_8);
                         currentState = State.PASS_LENGTH;
                     }
-
                 }
 
                 if (currentState == State.PASS_LENGTH) {
@@ -110,9 +106,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                         if (authService.authentification(username, password)) {
                             logger.info("The client " + username + " has connected.");
                             ctx.writeAndFlush(String.format("%sWelcome %s!", Constants.MESSAGE, username));
-
-                            // TODO список файлов
-
+                            ctx.writeAndFlush(Constants.LIST + username);
                             mutatePipeline(ctx, buf, username);
                             break;
                         } else {
@@ -139,11 +133,10 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                 }
             }
         }).start();
-
     }
 
     private void mutatePipeline(ChannelHandlerContext ctx, ByteBuf buf, String username) {
-        ctx.pipeline().addLast(new ProtoHandler(username));
+        ctx.pipeline().addLast(new FileHandler(username));
         ctx.fireChannelRead(buf);
         ctx.pipeline().remove(this);
     }

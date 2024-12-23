@@ -9,7 +9,7 @@ public class Client {
         new Thread(() -> Network.getInstance().start(networkStarter)).start();
         networkStarter.await();
 
-        AuthSender.sendFile("user4", "400", Network.getInstance().getCurrentChannel());
+        AuthSender.sendFile("user3", "300", Network.getInstance().getCurrentChannel());
 
 
 //        ProtoFileSender.sendFile(Paths.get("./chat/space.png"),

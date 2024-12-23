@@ -28,7 +28,7 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
         while (buf.readableBytes() > 0) {
             if (currentState == State.IDLE) {
                 command = buf.readByte();
-                if (command == (byte) 11) {
+                if (command == (byte) 11 || command == (byte) 21) {
                     currentState = State.MSG_LENGTH;
                 } else {
                     logger.info("ERROR: Invalid first byte - " + command);
@@ -48,7 +48,19 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
                     buf.readBytes(messageBytes);
                     String message = new String(messageBytes, StandardCharsets.UTF_8);
                     System.out.println(message);
+                    currentState = State.IDLE;
                 }
+
+//                while (buf.readableBytes() > 0) {
+//                    out.write(buf.readByte());
+//                    receivedFileLength++;
+//                    if (fileLength == receivedFileLength) {
+//                        currentState = State.IDLE;
+//                        System.out.println("File received");
+//                        out.close();
+//                        break;
+//                    }
+//                }
 
             }
 
