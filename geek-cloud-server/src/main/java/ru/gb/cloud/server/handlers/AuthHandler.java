@@ -5,7 +5,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.gb.cloud.server.constants.Constants;
+import ru.gb.cloud.common.CommandsForServer;
+import ru.gb.cloud.server.constants.OutMessageType;
 import ru.gb.cloud.server.databases.AuthService;
 
 import java.io.IOException;
@@ -26,26 +27,8 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
         IDLE, NAME_LENGTH, NAME, PASS_LENGTH, PASS
     }
 
-    private enum MessageType {
-        IDLE((byte) -1),
-        AUTH((byte) 11),
-        REG((byte) 12);
-
-        byte firstMessageByte;
-
-        MessageType(byte firstMessageByte) {
-            this.firstMessageByte = firstMessageByte;
-        }
-
-        static MessageType getDataTypeFromByte(byte b) {
-            if (b == AUTH.firstMessageByte) return AUTH;
-            if (b == REG.firstMessageByte) return REG;
-            return IDLE;
-        }
-    }
-
     private State currentState = State.IDLE;
-    private MessageType messageType = MessageType.IDLE;
+    private CommandsForServer messageType = CommandsForServer.IDLE;
     private String username;
     private String password;
     private int nextLength;
@@ -57,8 +40,8 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
             while (buf.readableBytes() > 0) {
                 if (currentState == State.IDLE) {
                     byte firstByte = buf.readByte();
-                    messageType = MessageType.getDataTypeFromByte(firstByte);
-                    if (messageType == MessageType.AUTH || messageType == MessageType.REG) {
+                    messageType = CommandsForServer.getDataTypeFromByte(firstByte);
+                    if (messageType == CommandsForServer.AUTH || messageType == CommandsForServer.REG) {
                         currentState = State.NAME_LENGTH;
                     } else {
                         logger.info("ERROR: Invalid first byte - " + firstByte);
@@ -102,22 +85,22 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                 }
 
                 if (username != null && password != null) {
-                    if (messageType == MessageType.AUTH) {
+                    if (messageType == CommandsForServer.AUTH) {
                         if (authService.authentification(username, password)) {
                             logger.info("The client " + username + " has connected.");
-                            ctx.writeAndFlush(String.format("%sWelcome %s!", Constants.MESSAGE, username));
-                            ctx.writeAndFlush(Constants.LIST + username);
+                            ctx.writeAndFlush(String.format("%sWelcome %s!", OutMessageType.MESSAGE, username));
+                            ctx.writeAndFlush(OutMessageType.LIST + username);
                             mutatePipeline(ctx, buf, username);
                             break;
                         } else {
                             logger.info("The client " + username + " has not connected.");
-                            ctx.writeAndFlush(String.format("%sIncorrect username or password.", Constants.MESSAGE));
+                            ctx.writeAndFlush(String.format("%sIncorrect username or password.", OutMessageType.MESSAGE));
                         }
                     }
-                    if (messageType == MessageType.REG) {
+                    if (messageType == CommandsForServer.REG) {
                         if (authService.createNewAccount(username, password)) {
                             logger.info("A new client named " + username + " has signed up.");
-                            ctx.writeAndFlush(String.format("%sWelcome %s!", Constants.MESSAGE, username));
+                            ctx.writeAndFlush(String.format("%sWelcome %s!", OutMessageType.MESSAGE, username));
                             try {
                                 Files.createDirectory(Paths.get("./server_storage/" + username));
                             } catch (IOException e) {
@@ -127,7 +110,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                             break;
                         } else {
                             logger.info(String.format("Registration was unsuccessful. Username: %s", username));
-                            ctx.writeAndFlush(String.format("%sRegistration was unsuccessful.", Constants.MESSAGE));
+                            ctx.writeAndFlush(String.format("%sRegistration was unsuccessful.", OutMessageType.MESSAGE));
                         }
                     }
                 }
