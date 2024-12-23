@@ -1,4 +1,4 @@
-package ru.gb.cloud.server;
+package ru.gb.cloud.server.databases;
 
 /**
  * Сервис аутентификации.

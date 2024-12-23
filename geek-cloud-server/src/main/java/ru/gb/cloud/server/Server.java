@@ -9,6 +9,10 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import ru.gb.cloud.server.databases.AuthService;
+import ru.gb.cloud.server.databases.MySQLAuthService;
+import ru.gb.cloud.server.databases.SQLiteAuthService;
+import ru.gb.cloud.server.databases.SessionFactoryUtils;
 
 public class Server {
     Logger logger = LogManager.getLogger(Server.class);
@@ -36,7 +40,7 @@ public class Server {
     }
 
     public static void main(String[] args) throws Exception {
-        AuthService authService = new DataBaseAuthService();
+        AuthService authService = new MySQLAuthService(new SessionFactoryUtils());
         authService.start();
         new Server().run(authService);
     }

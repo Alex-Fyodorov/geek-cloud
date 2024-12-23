@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  mysql:
+    container_name: geek-cloud-server-mysql
+    image: mysql:8.2-oraclelinux8
+    domainname: mysql
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=accounts
+    healthcheck:
+      test: [ "CMD-SHELL", "nc -z 127.0.0.1 3306 || exit 1" ]
+      interval: 1m30s
+      timeout: 60s
+      retries: 6
+
+  flyway-core:
+    container_name: geek-cloud-server-flyway
+    image: boxfuse/flyway
+    command: -url=jdbc:mysql://mysql:3306/accounts?verifyServerCertificate=false&useSSL=true -user=root -password=root -connectRetries=30 migrate
+    volumes:
+      - ./flyway/migration:/flyway/sql
+    depends_on:
+      - mysql

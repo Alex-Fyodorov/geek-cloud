@@ -1,8 +1,8 @@
-package ru.gb.cloud.server;
+package ru.gb.cloud.server.databases;
 
 import java.sql.*;
 
-public class DataBaseAuthService implements AuthService {
+public class SQLiteAuthService implements AuthService {
     private static Connection connection;
     private static Statement statement;
 
