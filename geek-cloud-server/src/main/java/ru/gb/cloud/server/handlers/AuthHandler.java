@@ -24,14 +24,32 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
 
     Logger logger = LogManager.getLogger(AuthHandler.class);
 
-    public enum State {
+    private enum State {
         IDLE, NAME_LENGTH, NAME, PASS_LENGTH, PASS
     }
 
+    private enum MessageType {
+        IDLE((byte) -1),
+        AUTH((byte) 11),
+        REG((byte) 12);
+
+        byte firstMessageByte;
+
+        MessageType(byte firstMessageByte) {
+            this.firstMessageByte = firstMessageByte;
+        }
+
+        static MessageType getDataTypeFromByte(byte b) {
+            if (b == AUTH.firstMessageByte) return AUTH;
+            if (b == REG.firstMessageByte) return REG;
+            return IDLE;
+        }
+    }
+
     private State currentState = State.IDLE;
+    private MessageType messageType = MessageType.IDLE;
     private String username;
     private String password;
-    private byte command;
     private int nextLength;
 
     @Override
@@ -40,8 +58,8 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
             ByteBuf buf = (ByteBuf) msg;
             while (buf.readableBytes() > 0) {
                 if (currentState == State.IDLE) {
-                    command = buf.readByte();
-                    if (command == (byte) 11 || command == (byte) 12) {
+                    messageType = MessageType.getDataTypeFromByte(buf.readByte());
+                    if (messageType == MessageType.AUTH || messageType == MessageType.REG) {
                         currentState = State.NAME_LENGTH;
                     } else {
                         logger.info("ERROR: Invalid first byte - " + command);
@@ -83,15 +101,10 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
 
                 if (buf.readableBytes() == 0) {
                     buf.release();
-                    System.out.println("alles");
-                } else {
-                    while (buf.readableBytes() > 0) {
-                        byte b = buf.readByte();
-                        System.out.println(b);
-                    }
                 }
+
                 if (username != null && password != null) {
-                    if (command == (byte) 11) {
+                    if (messageType == MessageType.AUTH) {
                         if (authService.authentification(username, password)) {
                             logger.info("The client " + username + " has connected.");
                             ctx.writeAndFlush(String.format("%sWelcome %s!", Constants.MESSAGE, username));
@@ -105,7 +118,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                             ctx.writeAndFlush(String.format("%sIncorrect username or password.", Constants.MESSAGE));
                         }
                     }
-                    if (command == (byte) 12) {
+                    if (messageType == MessageType.REG) {
                         if (authService.createNewAccount(username, password)) {
                             logger.info("A new client named " + username + " has signed up.");
                             ctx.writeAndFlush(String.format("%sWelcome %s!", Constants.MESSAGE, username));

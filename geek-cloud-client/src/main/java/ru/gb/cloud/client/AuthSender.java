@@ -19,7 +19,7 @@ public class AuthSender {
         byte[] passBytes = password.getBytes(StandardCharsets.UTF_8);
         ByteBuf buf = ByteBufAllocator.DEFAULT.directBuffer(1 + 4 + usernameBytes.length + 4 + passBytes.length);
 
-        buf.writeByte((byte) 12);
+        buf.writeByte((byte) 11);
         buf.writeInt(usernameBytes.length);
         buf.writeBytes(usernameBytes);
         buf.writeInt(passBytes.length);
