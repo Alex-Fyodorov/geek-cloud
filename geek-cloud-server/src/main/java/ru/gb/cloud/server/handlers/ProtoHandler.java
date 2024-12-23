@@ -1,4 +1,4 @@
-package ru.gb.cloud.server;
+package ru.gb.cloud.server.handlers;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -8,12 +8,16 @@ import java.io.BufferedOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ProtoHandler extends ChannelInboundHandlerAdapter {
-    private String username;
+    private final String username;
+    private final ExecutorService executorService;
 
     public ProtoHandler(String username) {
         this.username = username;
+        executorService = Executors.newSingleThreadExecutor();
     }
 
     public enum State {

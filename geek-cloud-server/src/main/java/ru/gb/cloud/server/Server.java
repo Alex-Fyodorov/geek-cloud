@@ -11,8 +11,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.gb.cloud.server.databases.AuthService;
 import ru.gb.cloud.server.databases.MySQLAuthService;
-import ru.gb.cloud.server.databases.SQLiteAuthService;
 import ru.gb.cloud.server.databases.SessionFactoryUtils;
+import ru.gb.cloud.server.handlers.AuthHandler;
+import ru.gb.cloud.server.handlers.OutServerHandler;
 
 public class Server {
     Logger logger = LogManager.getLogger(Server.class);
@@ -26,7 +27,10 @@ public class Server {
                     .childHandler( new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) {
-                            ch.pipeline().addLast(new AuthHandler(authService));
+                            ch.pipeline().addLast(
+                                    new OutServerHandler(),
+                                    new AuthHandler(authService)
+                            );
                         }
                     });
             //.childOption(ChannelOption.SO_KEEPALIVE, true);

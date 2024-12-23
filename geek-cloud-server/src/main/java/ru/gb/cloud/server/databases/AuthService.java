@@ -16,6 +16,14 @@ public interface AuthService {
     void stop();
 
     /**
+     * Аутентификация пользователя.
+     * @param username
+     * @param password
+     * @return
+     */
+    boolean authentification(String username, String password);
+
+    /**
      * Изменить пароль.
      * @param username
      * @param newPassword
@@ -29,6 +37,4 @@ public interface AuthService {
      * @return true, если успешно.
      */
     boolean createNewAccount(String username, String password);
-
-    boolean authentification(String username, String password);
 }

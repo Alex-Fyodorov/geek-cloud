@@ -1,15 +1,16 @@
 package ru.gb.cloud.client;
 
-import java.nio.file.Paths;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Logger;
 
-public class ProtoClient {
+public class Client {
     public static void main(String[] args) throws Exception {
         CountDownLatch networkStarter = new CountDownLatch(1);
         new Thread(() -> Network.getInstance().start(networkStarter)).start();
         networkStarter.await();
 
-        AuthSender.sendFile("Вася", "Пароль", Network.getInstance().getCurrentChannel());
+        AuthSender.sendFile("user4", "400", Network.getInstance().getCurrentChannel());
+
 
 //        ProtoFileSender.sendFile(Paths.get("./chat/space.png"),
 //                Network.getInstance().getCurrentChannel(), future -> {

@@ -1,5 +1,6 @@
 package ru.gb.cloud.server.databases;
 
+import jakarta.persistence.PersistenceException;
 import org.hibernate.Session;
 import ru.gb.cloud.server.models.Account;
 
@@ -39,6 +40,9 @@ public class MySQLAuthService implements AuthService {
             session.beginTransaction();
             session.persist(account);
             session.getTransaction().commit();
+        } catch (PersistenceException e) {
+            e.printStackTrace();
+            return false;
         }
         return account.getId()!=null;
     }

@@ -38,7 +38,9 @@ public class Network {
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel socketChannel) {
-                            socketChannel.pipeline().addLast();
+                            socketChannel.pipeline().addLast(
+                                    new InClientHandler()
+                            );
                             currentChannel = (Channel) socketChannel;
                         }
                     });
