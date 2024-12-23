@@ -58,11 +58,13 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
             ByteBuf buf = (ByteBuf) msg;
             while (buf.readableBytes() > 0) {
                 if (currentState == State.IDLE) {
-                    messageType = MessageType.getDataTypeFromByte(buf.readByte());
+                    byte firstByte = buf.readByte();
+                    messageType = MessageType.getDataTypeFromByte(firstByte);
+                    System.out.println(messageType.toString());
                     if (messageType == MessageType.AUTH || messageType == MessageType.REG) {
                         currentState = State.NAME_LENGTH;
                     } else {
-                        logger.info("ERROR: Invalid first byte - " + command);
+                        logger.info("ERROR: Invalid first byte - " + firstByte);
                     }
                 }
 
