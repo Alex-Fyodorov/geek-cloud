@@ -28,7 +28,7 @@ public class OutServerHandler extends ChannelOutboundHandlerAdapter {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        //executorService.execute(() -> {
+        executorService.execute(() -> {
             String message = (String) msg;
             if (message.startsWith(OutMessageType.MESSAGE)) {
                 message = message.substring(OutMessageType.MESSAGE.length());
@@ -63,30 +63,29 @@ public class OutServerHandler extends ChannelOutboundHandlerAdapter {
                     buf.writeInt(fileNameBytes.length);
                     buf.writeBytes(fileNameBytes);
                     buf.writeLong(Files.size(path));
-                    System.out.println(Files.size(path));
                     ctx.writeAndFlush(buf);
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
-                    ctx.writeAndFlush(region);
-                    ctx.flush();
-//                    ChannelFuture transferOperationFuture = ctx.writeAndFlush(region);
-//                    transferOperationFuture.addListener(future -> {
-//                        if (future.isSuccess()) {
-//                            logger.info("The file has been sent successfully: " + filePath);
-//                        }
-//                        if (!future.isSuccess()) {
-//                            logger.info("Sending the file failed: " + filePath);
-//                        }
-//                    });
+//                    ctx.writeAndFlush(region);
+//                    ctx.flush();
+                    ChannelFuture transferOperationFuture = ctx.writeAndFlush(region);
+                    transferOperationFuture.addListener(future -> {
+                        if (future.isSuccess()) {
+                            logger.info("The file has been sent successfully: " + filePath);
+                        }
+                        if (!future.isSuccess()) {
+                            logger.info("Sending the file failed: " + filePath);
+                        }
+                    });
 
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-        //});
+        });
     }
 
     private void sendText(ChannelHandlerContext ctx, String message, CommandForClient command) {

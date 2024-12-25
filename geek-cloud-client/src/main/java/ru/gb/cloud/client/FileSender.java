@@ -19,7 +19,7 @@ public class FileSender {
         byte[] fileNameBytes = path.getFileName().toString().getBytes(StandardCharsets.UTF_8);
         ByteBuf buf = ByteBufAllocator.DEFAULT.directBuffer(1 + 4 + fileNameBytes.length + 8);
 
-        buf.writeByte((byte) 25);
+        buf.writeByte((byte) 21);
         buf.writeInt(path.getFileName().toString().length());
         buf.writeBytes(fileNameBytes);
         buf.writeLong(Files.size(path));

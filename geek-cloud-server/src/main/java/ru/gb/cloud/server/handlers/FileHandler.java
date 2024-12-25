@@ -5,6 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import ru.gb.cloud.common.CommandForClient;
 import ru.gb.cloud.common.CommandForServer;
 import ru.gb.cloud.server.constants.OutMessageType;
 
@@ -75,6 +76,7 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                         receivedFileLength = 0L;
                         String path = String.format("%s%s/%s", SERVER_STORAGE, username, message);
                         out = new BufferedOutputStream(Files.newOutputStream(Paths.get(path)));
+                        command = CommandForServer.IDLE;
                         currentState = State.FILE_LENGTH;
                     } catch (IOException e) {
                         throw new RuntimeException(e);
@@ -108,9 +110,9 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                             receivedFileLength++;
                             if (fileLength == receivedFileLength) {
                                 currentState = State.IDLE;
-
-                                // TODO message to user
-                                System.out.println("File received");
+                                ctx.writeAndFlush(String.format(String.format("%sThe \"%s\" file was " +
+                                                "successfully received on the server",
+                                        OutMessageType.MESSAGE, message)));
                                 out.close();
                                 break;
                             }
@@ -133,6 +135,7 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
         if (firstByte == CommandForServer.RENAME.getFirstMessageByte()) return true;
         if (firstByte == CommandForServer.DELETE.getFirstMessageByte()) return true;
         if (firstByte == CommandForServer.FILE_LIST.getFirstMessageByte()) return true;
+        System.out.println("Битый байт");
         return false;
     }
 
