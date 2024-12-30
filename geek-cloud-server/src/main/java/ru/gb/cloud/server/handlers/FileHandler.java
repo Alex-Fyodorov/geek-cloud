@@ -5,13 +5,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.gb.cloud.common.CommandForClient;
 import ru.gb.cloud.common.CommandForServer;
 import ru.gb.cloud.server.constants.OutMessageType;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
@@ -21,25 +19,26 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
     private final String username;
     private final ExecutorService executorService;
     private static final String SERVER_STORAGE = "./server_storage/";
+    private final MessageService messageService;
+    private final FileService fileService;
 
     Logger logger = LogManager.getLogger(FileHandler.class);
 
     public FileHandler(String username) {
         this.username = username;
         executorService = Executors.newSingleThreadExecutor();
+        messageService = new MessageService();
+        fileService = new FileService();
     }
 
     public enum State {
-        IDLE, MESSAGE_LENGTH, MESSAGE, FILE_LENGTH, FILE
+        IDLE, GET_MESSAGE, MESSAGE_END, GET_FILE
     }
 
     private State currentState = State.IDLE;
     private CommandForServer command;
     private String message;
-    private int nextLength;
-    private long fileLength;
-    private long receivedFileLength;
-    private BufferedOutputStream out;
+    private String path;
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -50,73 +49,54 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                     byte firstByte = buf.readByte();
                     if (checkFirstByte(firstByte)) {
                         command = CommandForServer.getDataTypeFromByte(firstByte);
-                        currentState = State.MESSAGE_LENGTH;
+                        currentState = State.GET_MESSAGE;
                     } else {
+                        // TODO может быть послать сообщение пользователю?
                         logger.info(String.format("ERROR: Invalid first byte: %d, user: %s", firstByte, username));
                     }
                 }
 
-                if (currentState == State.MESSAGE_LENGTH) {
-                    if (buf.readableBytes() >= 4) {
-                        nextLength = buf.readInt();
-                        currentState = State.MESSAGE;
-                    }
+                if (currentState == State.GET_MESSAGE) {
+                    messageService.readMessage(buf, (m) -> {
+                        message = m;
+                        path = String.format("%s%s/%s", SERVER_STORAGE, username, message);
+                        currentState = State.MESSAGE_END;
+                    });
                 }
 
-                if (currentState == State.MESSAGE) {
-                    if (buf.readableBytes() >= nextLength) {
-                        byte[] messageBytes = new byte[nextLength];
-                        buf.readBytes(messageBytes);
-                        message = new String(messageBytes, StandardCharsets.UTF_8);
-                    }
-                }
-
-                if (command == CommandForServer.SEND) {
-                    try {
-                        receivedFileLength = 0L;
-                        String path = String.format("%s%s/%s", SERVER_STORAGE, username, message);
-                        out = new BufferedOutputStream(Files.newOutputStream(Paths.get(path)));
+                if (currentState == State.MESSAGE_END) {
+                    if (command == CommandForServer.GET_FILE_FROM_CLIENT) {
                         command = CommandForServer.IDLE;
-                        currentState = State.FILE_LENGTH;
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                } else if (command == CommandForServer.LOAD) {
-                    String path = String.format("%s%s%s/%s", OutMessageType.FILE, SERVER_STORAGE, username, message);
-                    ctx.writeAndFlush(path);
-                    currentState = State.IDLE;
-                } else if (command == CommandForServer.RENAME) {
-                    // TODO сообщение в OUT
-                    currentState = State.IDLE;
-                } else if (command == CommandForServer.DELETE) {
-                    // TODO сообщение в OUT
-                    currentState = State.IDLE;
-                } else if (command == CommandForServer.FILE_LIST) {
-                    // TODO сообщение в OUT
-                    currentState = State.IDLE;
-                }
-
-                if (currentState == State.FILE_LENGTH) {
-                    if (buf.readableBytes() >= 8) {
-                        fileLength = buf.readLong();
-                        currentState = State.FILE;
-                    }
-                }
-
-                if (currentState == State.FILE) {
-                    try {
-                        while (buf.readableBytes() > 0) {
-                            out.write(buf.readByte());
-                            receivedFileLength++;
-                            if (fileLength == receivedFileLength) {
-                                currentState = State.IDLE;
-                                ctx.writeAndFlush(String.format(String.format("%sThe \"%s\" file was " +
-                                                "successfully received on the server",
-                                        OutMessageType.MESSAGE, message)));
-                                out.close();
-                                break;
-                            }
+                        currentState = State.GET_FILE;
+                    } else if (command == CommandForServer.SEND_FILE_TO_CLIENT) {
+                        //String sendPath = String.format("%s%s%s/%s", OutMessageType.FILE, SERVER_STORAGE, username, message);
+                        ctx.writeAndFlush(OutMessageType.FILE + path);
+                        currentState = State.IDLE;
+                    } else if (command == CommandForServer.RENAME) {
+                        // TODO сообщение в OUT
+                        currentState = State.IDLE;
+                    } else if (command == CommandForServer.DELETE) {
+                        try {
+                            Files.deleteIfExists(Paths.get(path));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         }
+                        // TODO сообщение в OUT
+                        currentState = State.IDLE;
+                    } else if (command == CommandForServer.FILE_LIST) {
+                        // TODO сообщение в OUT
+                        currentState = State.IDLE;
+                    }
+                }
+
+                if (currentState == State.GET_FILE) {
+                    try {
+                        fileService.getFile(buf, path, (() -> {
+                            currentState = State.IDLE;
+                            ctx.writeAndFlush(String.format(String.format("%sThe \"%s\" file was " +
+                                            "successfully received on the server",
+                                    OutMessageType.MESSAGE, message)));
+                        }));
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -130,12 +110,11 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
     }
 
     private boolean checkFirstByte(byte firstByte) {
-        if (firstByte == CommandForServer.SEND.getFirstMessageByte()) return true;
-        if (firstByte == CommandForServer.LOAD.getFirstMessageByte()) return true;
+        if (firstByte == CommandForServer.GET_FILE_FROM_CLIENT.getFirstMessageByte()) return true;
+        if (firstByte == CommandForServer.SEND_FILE_TO_CLIENT.getFirstMessageByte()) return true;
         if (firstByte == CommandForServer.RENAME.getFirstMessageByte()) return true;
         if (firstByte == CommandForServer.DELETE.getFirstMessageByte()) return true;
         if (firstByte == CommandForServer.FILE_LIST.getFirstMessageByte()) return true;
-        System.out.println("Битый байт");
         return false;
     }
 
