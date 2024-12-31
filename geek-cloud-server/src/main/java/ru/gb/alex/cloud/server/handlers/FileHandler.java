@@ -52,8 +52,10 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                         command = CommandForServer.getDataTypeFromByte(firstByte);
                         currentState = State.GET_MESSAGE;
                     } else {
-                        // TODO может быть послать сообщение пользователю?
-                        logger.info(String.format("ERROR: Invalid first byte: %d, user: %s", firstByte, username));
+                        ctx.writeAndFlush(String.format("%sERROR: Invalid first byte: %d.",
+                                OutMessageType.MESSAGE, firstByte));
+                        logger.info(String.format("ERROR: Invalid first byte: %d, user: %s",
+                                firstByte, username));
                     }
                 }
 
@@ -67,25 +69,44 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
 
                 if (currentState == State.MESSAGE_END) {
                     if (command == CommandForServer.GET_FILE_FROM_CLIENT) {
-                        command = CommandForServer.IDLE;
                         currentState = State.GET_FILE;
-                    } else if (command == CommandForServer.SEND_FILE_TO_CLIENT) {
+                    }
+                    if (command == CommandForServer.SEND_FILE_TO_CLIENT) {
                         ctx.writeAndFlush(OutMessageType.FILE + path);
                         currentState = State.IDLE;
-                    } else if (command == CommandForServer.RENAME) {
-                        // TODO сообщение в OUT
+                    }
+                    if (command == CommandForServer.RENAME) {
+                        String[] names = message.split("\\s");
+                        path = String.format("%s%s/%s", SERVER_STORAGE, username, names[0]);
+                        if (checkRenamableFiles(ctx, names[0], names[1])) {
+                            try {
+                                Files.move(Paths.get(path), Paths.get(path).resolveSibling(names[1]));
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            logger.info(String.format("File \"%s/%s\" was renamed to \"%s\".",
+                                    username, names[0], names[1]));
+                            ctx.writeAndFlush(OutMessageType.LIST + username);
+                        }
                         currentState = State.IDLE;
-                    } else if (command == CommandForServer.DELETE) {
+                    }
+                    if (command == CommandForServer.DELETE) {
                         try {
-                            Files.deleteIfExists(Paths.get(path));
-                            // TODO проверить команду delete
-                            // TODO сообщение в OUT
-                            currentState = State.IDLE;
+                            if (Files.deleteIfExists(Paths.get(path))) {
+                                ctx.writeAndFlush(OutMessageType.LIST + username);
+                                logger.info(String.format("File \"%s/%s\" was deleted.",
+                                        username, message));
+                            } else {
+                                ctx.writeAndFlush(String.format("%sFile \"%s\" does not exist.",
+                                        OutMessageType.MESSAGE, message));
+                            }
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-                    } else if (command == CommandForServer.FILE_LIST) {
-                        // TODO сообщение в OUT
+                        currentState = State.IDLE;
+                    }
+                    if (command == CommandForServer.FILE_LIST) {
+                        ctx.writeAndFlush(OutMessageType.LIST + username);
                         currentState = State.IDLE;
                     }
                 }
@@ -94,9 +115,11 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                     try {
                         fileService.getFile(buf, path, (() -> {
                             currentState = State.IDLE;
-                            ctx.writeAndFlush(String.format(String.format("%sThe \"%s\" file was " +
-                                            "successfully received on the server",
-                                    OutMessageType.MESSAGE, message)));
+                            ctx.writeAndFlush(OutMessageType.LIST + username);
+                            ctx.writeAndFlush(String.format("%sThe \"%s\" file was successfully " +
+                                    "received on the server", OutMessageType.MESSAGE, message));
+                            logger.info(String.format("The \"%s/%s\" file was successfully " +
+                                    "received on the server", username, message));
                         }));
                     } catch (IOException e) {
                         throw new RuntimeException(e);
@@ -117,6 +140,23 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
         if (firstByte == CommandForServer.DELETE.getFirstMessageByte()) return true;
         if (firstByte == CommandForServer.FILE_LIST.getFirstMessageByte()) return true;
         return false;
+    }
+
+    private boolean checkRenamableFiles(ChannelHandlerContext ctx, String oldName, String newName) {
+        int count = 0;
+        String oldPath = String.format("%s%s/%s", SERVER_STORAGE, username, oldName);
+        String newPath = String.format("%s%s/%s", SERVER_STORAGE, username, newName);
+        if (Files.exists(Paths.get(newPath))) {
+            count++;
+            ctx.writeAndFlush(String.format("%sFile \"%s\" already exists.",
+                    OutMessageType.MESSAGE, newName));
+        }
+        if (!Files.exists(Paths.get(oldPath))) {
+            count++;
+            ctx.writeAndFlush(String.format("%sFile \"%s\" does not exist.",
+                    OutMessageType.MESSAGE, oldName));
+        }
+        return count == 0;
     }
 
     @Override

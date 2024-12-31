@@ -53,4 +53,24 @@ public class FileSender {
         buf.writeBytes(filenameBytes);
         channel.writeAndFlush(buf);
     }
+
+    public static void renameFile(String filename, Channel channel) {
+        byte[] filenameBytes = filename.getBytes(StandardCharsets.UTF_8);
+        ByteBuf buf = ByteBufAllocator.DEFAULT.directBuffer(1 + 4 + filenameBytes.length);
+
+        buf.writeByte((byte) 23);
+        buf.writeInt(filenameBytes.length);
+        buf.writeBytes(filenameBytes);
+        channel.writeAndFlush(buf);
+    }
+
+    public static void deleteFile(String filename, Channel channel) {
+        byte[] filenameBytes = filename.getBytes(StandardCharsets.UTF_8);
+        ByteBuf buf = ByteBufAllocator.DEFAULT.directBuffer(1 + 4 + filenameBytes.length);
+
+        buf.writeByte((byte) 24);
+        buf.writeInt(filenameBytes.length);
+        buf.writeBytes(filenameBytes);
+        channel.writeAndFlush(buf);
+    }
 }

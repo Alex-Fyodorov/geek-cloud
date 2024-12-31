@@ -25,6 +25,11 @@ public class Client {
                 //Network.getInstance().stop();
             }
         });
+
+        FileSender.renameFile("space2.png space3.png", Network.getInstance().getCurrentChannel());
+
+        FileSender.deleteFile("space3.png", Network.getInstance().getCurrentChannel());
+
 //        Thread.sleep(2000);
 //        ProtoFileSender.sendFile(Paths.get("./chat/space2.png"),
 //                Network.getInstance().getCurrentChannel(), future -> {
