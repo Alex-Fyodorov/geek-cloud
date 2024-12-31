@@ -1,8 +1,8 @@
-package ru.gb.cloud.server.databases;
+package ru.gb.alex.cloud.server.databases;
 
 import jakarta.persistence.PersistenceException;
 import org.hibernate.Session;
-import ru.gb.cloud.server.models.Account;
+import ru.gb.alex.cloud.server.models.Account;
 
 public class MySQLAuthService implements AuthService {
     private SessionFactoryUtils factory;

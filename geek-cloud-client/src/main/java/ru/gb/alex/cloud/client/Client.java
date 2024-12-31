@@ -1,8 +1,7 @@
-package ru.gb.cloud.client;
+package ru.gb.alex.cloud.client;
 
 import java.nio.file.Paths;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Logger;
 
 public class Client {
     public static void main(String[] args) throws Exception {

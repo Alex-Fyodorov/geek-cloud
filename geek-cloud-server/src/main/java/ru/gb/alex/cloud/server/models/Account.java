@@ -1,4 +1,4 @@
-package ru.gb.cloud.server.models;
+package ru.gb.alex.cloud.server.models;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;

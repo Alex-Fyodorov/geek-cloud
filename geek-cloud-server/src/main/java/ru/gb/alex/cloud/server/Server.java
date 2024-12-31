@@ -1,4 +1,4 @@
-package ru.gb.cloud.server;
+package ru.gb.alex.cloud.server;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -9,11 +9,11 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.gb.cloud.server.databases.AuthService;
-import ru.gb.cloud.server.databases.MySQLAuthService;
-import ru.gb.cloud.server.databases.SessionFactoryUtils;
-import ru.gb.cloud.server.handlers.AuthHandler;
-import ru.gb.cloud.server.handlers.OutServerHandler;
+import ru.gb.alex.cloud.server.databases.AuthService;
+import ru.gb.alex.cloud.server.databases.MySQLAuthService;
+import ru.gb.alex.cloud.server.databases.SessionFactoryUtils;
+import ru.gb.alex.cloud.server.handlers.AuthHandler;
+import ru.gb.alex.cloud.server.handlers.OutServerHandler;
 
 public class Server {
     Logger logger = LogManager.getLogger(Server.class);

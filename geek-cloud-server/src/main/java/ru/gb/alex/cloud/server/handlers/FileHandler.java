@@ -1,14 +1,13 @@
-package ru.gb.cloud.server.handlers;
+package ru.gb.alex.cloud.server.handlers;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.gb.cloud.common.CommandForServer;
-import ru.gb.cloud.server.constants.OutMessageType;
+import ru.gb.alex.cloud.server.constants.OutMessageType;
+import ru.gb.alex.cloud.common.CommandForServer;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -57,11 +56,11 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                 }
 
                 if (currentState == State.GET_MESSAGE) {
-                    messageService.readMessage(buf, (m) -> {
+                    messageService.readMessage(buf, (m -> {
                         message = m;
                         path = String.format("%s%s/%s", SERVER_STORAGE, username, message);
                         currentState = State.MESSAGE_END;
-                    });
+                    }));
                 }
 
                 if (currentState == State.MESSAGE_END) {
@@ -69,7 +68,6 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                         command = CommandForServer.IDLE;
                         currentState = State.GET_FILE;
                     } else if (command == CommandForServer.SEND_FILE_TO_CLIENT) {
-                        //String sendPath = String.format("%s%s%s/%s", OutMessageType.FILE, SERVER_STORAGE, username, message);
                         ctx.writeAndFlush(OutMessageType.FILE + path);
                         currentState = State.IDLE;
                     } else if (command == CommandForServer.RENAME) {
@@ -78,11 +76,12 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                     } else if (command == CommandForServer.DELETE) {
                         try {
                             Files.deleteIfExists(Paths.get(path));
+                            // TODO проверить команду delete
+                            // TODO сообщение в OUT
+                            currentState = State.IDLE;
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-                        // TODO сообщение в OUT
-                        currentState = State.IDLE;
                     } else if (command == CommandForServer.FILE_LIST) {
                         // TODO сообщение в OUT
                         currentState = State.IDLE;

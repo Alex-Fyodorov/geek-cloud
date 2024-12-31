@@ -20,7 +20,7 @@
         <property name="hibernate.hbm2ddl.auto">update</property>
         <property name="hibernate.format_sql">true</property>
 
-        <mapping class="ru.gb.cloud.server.models.Account"/>
+        <mapping class="ru.gb.alex.cloud.server.models.Account"/>
 
     </session-factory>
 </hibernate-configuration>

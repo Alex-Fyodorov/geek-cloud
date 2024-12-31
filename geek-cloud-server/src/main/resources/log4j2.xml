@@ -16,7 +16,7 @@
     </Appenders>
 
     <Loggers>
-        <Logger name="ru.gb.cloud.server.Server" level="debug"/>
+        <Logger name="ru.gb.alex.cloud.server.Server" level="debug"/>
         <Root level="info">
             <AppenderRef ref="STDOUT" />
             <AppenderRef ref="FILE" />

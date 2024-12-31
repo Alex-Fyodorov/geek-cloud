@@ -1,4 +1,4 @@
-package ru.gb.cloud.server.databases;
+package ru.gb.alex.cloud.server.databases;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;

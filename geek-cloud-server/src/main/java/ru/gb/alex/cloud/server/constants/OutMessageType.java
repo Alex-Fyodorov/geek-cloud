@@ -1,4 +1,4 @@
-package ru.gb.cloud.server.constants;
+package ru.gb.alex.cloud.server.constants;
 
 public class OutMessageType {
     public static final String MESSAGE = "/message ";

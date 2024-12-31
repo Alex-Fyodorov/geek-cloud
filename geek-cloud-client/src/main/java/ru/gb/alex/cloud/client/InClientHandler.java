@@ -1,11 +1,11 @@
-package ru.gb.cloud.client;
+package ru.gb.alex.cloud.client;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.gb.cloud.common.CommandForClient;
+import ru.gb.alex.cloud.common.CommandForClient;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;

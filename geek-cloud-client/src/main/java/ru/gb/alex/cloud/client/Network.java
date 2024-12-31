@@ -1,4 +1,4 @@
-package ru.gb.cloud.client;
+package ru.gb.alex.cloud.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;

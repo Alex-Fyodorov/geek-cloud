@@ -1,4 +1,4 @@
-package ru.gb.cloud.server.handlers;
+package ru.gb.alex.cloud.server.handlers;
 
 @FunctionalInterface
 public interface MessageCallback {

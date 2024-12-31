@@ -1,13 +1,13 @@
-package ru.gb.cloud.server.handlers;
+package ru.gb.alex.cloud.server.handlers;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.gb.cloud.common.CommandForServer;
-import ru.gb.cloud.server.constants.OutMessageType;
-import ru.gb.cloud.server.databases.AuthService;
+import ru.gb.alex.cloud.common.CommandForServer;
+import ru.gb.alex.cloud.server.constants.OutMessageType;
+import ru.gb.alex.cloud.server.databases.AuthService;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
