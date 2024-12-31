@@ -11,9 +11,9 @@ public class Client {
 
         FileSender.sendAuth("user4", "400", Network.getInstance().getCurrentChannel());
         Thread.sleep(10000);
+        // TODO поставить блокирующую операцию
         FileSender.fileRequest("task.md", Network.getInstance().getCurrentChannel());
 
-        Thread.sleep(10000);
         FileSender.sendFile(Paths.get("./client_storage/space2.png"),
                 Network.getInstance().getCurrentChannel(), future -> {
             if (!future.isSuccess()) {

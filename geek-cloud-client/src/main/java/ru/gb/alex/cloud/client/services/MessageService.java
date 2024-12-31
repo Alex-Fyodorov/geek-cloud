@@ -1,6 +1,7 @@
-package ru.gb.alex.cloud.server.handlers;
+package ru.gb.alex.cloud.client.services;
 
 import io.netty.buffer.ByteBuf;
+import ru.gb.alex.cloud.client.callbacks.MessageCallback;
 
 import java.nio.charset.StandardCharsets;
 

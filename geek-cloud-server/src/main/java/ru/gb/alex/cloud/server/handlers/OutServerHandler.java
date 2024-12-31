@@ -59,18 +59,11 @@ public class OutServerHandler extends ChannelOutboundHandlerAdapter {
                     byte[] fileNameBytes = path.getFileName().toString().getBytes(StandardCharsets.UTF_8);
                     ByteBuf buf = ByteBufAllocator.DEFAULT.directBuffer(1 + 4 + fileNameBytes.length + 8);
                     buf.writeByte(CommandForClient.FILE.getFirstMessageByte());
-                    //buf.writeInt(path.getFileName().toString().length());
                     buf.writeInt(fileNameBytes.length);
                     buf.writeBytes(fileNameBytes);
                     buf.writeLong(Files.size(path));
                     ctx.writeAndFlush(buf);
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-//                    ctx.writeAndFlush(region);
-//                    ctx.flush();
+
                     ChannelFuture transferOperationFuture = ctx.writeAndFlush(region);
                     transferOperationFuture.addListener(future -> {
                         if (future.isSuccess()) {

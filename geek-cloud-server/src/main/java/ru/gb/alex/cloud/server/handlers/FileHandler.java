@@ -7,6 +7,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.gb.alex.cloud.server.constants.OutMessageType;
 import ru.gb.alex.cloud.common.CommandForServer;
+import ru.gb.alex.cloud.server.services.FileService;
+import ru.gb.alex.cloud.server.services.MessageService;
 
 import java.io.IOException;
 import java.nio.file.Files;

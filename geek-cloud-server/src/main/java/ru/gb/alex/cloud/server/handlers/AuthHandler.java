@@ -8,30 +8,31 @@ import org.apache.logging.log4j.Logger;
 import ru.gb.alex.cloud.common.CommandForServer;
 import ru.gb.alex.cloud.server.constants.OutMessageType;
 import ru.gb.alex.cloud.server.databases.AuthService;
+import ru.gb.alex.cloud.server.services.MessageService;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class AuthHandler extends ChannelInboundHandlerAdapter {
     private final AuthService authService;
+    private final MessageService messageService;
 
     public AuthHandler(AuthService authService) {
         this.authService = authService;
+        messageService = new MessageService();
     }
 
     Logger logger = LogManager.getLogger(AuthHandler.class);
 
     private enum State {
-        IDLE, NAME_LENGTH, NAME, PASS_LENGTH, PASS
+        IDLE, GET_NAME, GET_PASSWORD
     }
 
     private State currentState = State.IDLE;
     private CommandForServer messageType = CommandForServer.IDLE;
     private String username;
     private String password;
-    private int nextLength;
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -42,42 +43,24 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                     byte firstByte = buf.readByte();
                     messageType = CommandForServer.getDataTypeFromByte(firstByte);
                     if (messageType == CommandForServer.AUTH || messageType == CommandForServer.REG) {
-                        currentState = State.NAME_LENGTH;
+                        currentState = State.GET_NAME;
                     } else {
                         logger.info("ERROR: Invalid first byte - " + firstByte);
                     }
                 }
 
-                if (currentState == State.NAME_LENGTH) {
-                    if (buf.readableBytes() >= 4) {
-                        nextLength = buf.readInt();
-                        currentState = State.NAME;
-                    }
+                if (currentState == State.GET_NAME) {
+                    messageService.readMessage(buf, (m -> {
+                        username = m;
+                        currentState = State.GET_PASSWORD;
+                    }));
                 }
 
-                if (currentState == State.NAME) {
-                    if (buf.readableBytes() >= nextLength) {
-                        byte[] usernameBytes = new byte[nextLength];
-                        buf.readBytes(usernameBytes);
-                        username = new String(usernameBytes, StandardCharsets.UTF_8);
-                        currentState = State.PASS_LENGTH;
-                    }
-                }
-
-                if (currentState == State.PASS_LENGTH) {
-                    if (buf.readableBytes() >= 4) {
-                        nextLength = buf.readInt();
-                        currentState = State.PASS;
-                    }
-                }
-
-                if (currentState == State.PASS) {
-                    if (buf.readableBytes() >= nextLength) {
-                        byte[] passBytes = new byte[nextLength];
-                        buf.readBytes(passBytes);
-                        password = new String(passBytes, StandardCharsets.UTF_8);
+                if (currentState == State.GET_PASSWORD) {
+                    messageService.readMessage(buf, (m -> {
+                        password = m;
                         currentState = State.IDLE;
-                    }
+                    }));
                 }
 
                 if (buf.readableBytes() == 0) {
