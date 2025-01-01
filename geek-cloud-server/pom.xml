@@ -55,10 +55,5 @@
             <artifactId>hibernate-core</artifactId>
             <version>6.1.7.Final</version>
         </dependency>
-        <dependency>
-            <groupId>ru.gb.alex</groupId>
-            <artifactId>geek-cloud-common</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
     </dependencies>
 </project>

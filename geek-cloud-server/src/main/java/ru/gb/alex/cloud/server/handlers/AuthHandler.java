@@ -5,7 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.gb.alex.cloud.common.CommandForServer;
+import ru.gb.alex.cloud.server.constants.CommandForServer;
 import ru.gb.alex.cloud.server.constants.OutMessageType;
 import ru.gb.alex.cloud.server.databases.AuthService;
 import ru.gb.alex.cloud.server.services.MessageService;

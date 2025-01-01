@@ -1,4 +1,4 @@
-package ru.gb.alex.cloud.common;
+package ru.gb.alex.cloud.server.constants;
 
 public enum CommandForServer {
     IDLE((byte) -1),
