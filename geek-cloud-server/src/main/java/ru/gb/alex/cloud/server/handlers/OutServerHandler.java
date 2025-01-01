@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
@@ -73,7 +74,12 @@ public class OutServerHandler extends ChannelOutboundHandlerAdapter {
                             logger.info("Sending the file failed: " + filePath);
                         }
                     });
-
+                } catch (NoSuchFileException e) {
+                    String filePath = message.substring(OutMessageType.FILE.length());
+                    String fileName = Paths.get(filePath).getFileName().toString();
+                    String response = String.format("File \"%s\" not found.", fileName);
+                    logger.info(response);
+                    sendText(ctx, response, CommandForClient.MESSAGE);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
