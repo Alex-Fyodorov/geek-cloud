@@ -11,6 +11,7 @@
     <option name="ignoredFiles">
       <set>
         <option value="$PROJECT_DIR$/Netty/pom.xml" />
+        <option value="$PROJECT_DIR$/geek-cloud-common/pom.xml" />
         <option value="$PROJECT_DIR$/netty/pom.xml" />
       </set>
     </option>
