@@ -15,11 +15,14 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class OutServerHandler extends ChannelOutboundHandlerAdapter {
     private final ExecutorService executorService;
+    private static final String SERVER_STORAGE = "./server_storage/";
 
     public OutServerHandler() {
         executorService = Executors.newSingleThreadExecutor();
@@ -38,15 +41,14 @@ public class OutServerHandler extends ChannelOutboundHandlerAdapter {
 
             if (message.startsWith(OutMessageType.LIST)) {
                 String username = message.substring(OutMessageType.LIST.length());
-                File[] filesInCurrentDir = new File("./server_storage/" + username).listFiles();
+                File[] filesInCurrentDir = new File(SERVER_STORAGE + username).listFiles();
                 if (filesInCurrentDir != null && filesInCurrentDir.length > 0) {
-                    StringBuilder stringBuilder = new StringBuilder();
-                    for (File file : filesInCurrentDir) {
-                        stringBuilder.append(file.getName());
-                        stringBuilder.append(" ");
-                    }
-                    stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-                    sendText(ctx, stringBuilder.toString(), CommandForClient.FILE_LIST);
+                    String fileList = Arrays.stream(filesInCurrentDir)
+                            .collect(Collectors.toMap(f -> f.getName(), f -> f.length()))
+                            .entrySet().stream()
+                            .map(e -> e.getKey() + "//" + e.getValue())
+                            .collect(Collectors.joining(" "));
+                    sendText(ctx, fileList, CommandForClient.FILE_LIST);
                 } else {
                     sendText(ctx, "", CommandForClient.FILE_LIST);
                 }

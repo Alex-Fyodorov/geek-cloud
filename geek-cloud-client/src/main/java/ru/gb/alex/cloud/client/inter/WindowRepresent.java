@@ -1,14 +1,17 @@
 package ru.gb.alex.cloud.client.inter;
 
 import io.netty.channel.Channel;
+import ru.gb.alex.cloud.client.constants.CommandForServer;
 import ru.gb.alex.cloud.client.handlers.RequestSender;
 import ru.gb.alex.cloud.client.network.Network;
-import ru.gb.alex.cloud.client.constants.CommandForServer;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.io.File;
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 public class WindowRepresent extends JFrame implements Represent {
 
@@ -21,10 +24,11 @@ public class WindowRepresent extends JFrame implements Represent {
     JButton btnMove = new JButton("Move");
     JButton btnRename = new JButton("Rename");
     JButton btnDelete = new JButton("Delete");
-    private String[] columnsHeaders = new String[]{"Filename", "Size"};
-    private String[] columnsHeaders1 = new String[]{"Filename1", "Size1"};
-    private String[][] columnsHeaders2 = new String[][]{{"File111111111111111", "Size1"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}};
-    private CountDownLatch confirmLogin = new CountDownLatch(1);
+    private final String[] columnsHeaders = new String[]{"Filename", "Size"};
+    private final CountDownLatch confirmLogin = new CountDownLatch(1);
+    private static final String CLIENT_STORAGE = "./client_storage/";
+    private final DataModel modelClient = new DataModel(new String[0][0], columnsHeaders);
+    private final DataModel modelServer = new DataModel(new String[0][0], columnsHeaders);
 
     public WindowRepresent() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -65,12 +69,12 @@ public class WindowRepresent extends JFrame implements Represent {
         panelBottom.add(btnDelete, constraints);
         add(panelBottom, BorderLayout.SOUTH);
 
-        JTable tableClient = new JTable(new DataModel(columnsHeaders2, columnsHeaders));
+        JTable tableClient = new JTable(modelClient);
         setTableProperties(tableClient);
-
-        //tableClient.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        JTable tableServer = new JTable(new DataModel(columnsHeaders2, columnsHeaders1));
+        showClientFileList();
+        JTable tableServer = new JTable(modelServer);
         setTableProperties(tableServer);
+
         JPanel tablePanel = new JPanel(gridBagLayout);
         constraints.fill = GridBagConstraints.BOTH;
         constraints.weighty = 0.5;
@@ -100,12 +104,23 @@ public class WindowRepresent extends JFrame implements Represent {
 
     @Override
     public void showServerFileList(String message) {
-
+        String[][] fileList = Arrays.stream(message.split("\\s"))
+                .map(f -> f.split("//"))
+                .toArray(String[][]::new);
+        modelServer.setData(fileList);
+        modelServer.fireTableDataChanged();
     }
 
     @Override
     public void showClientFileList() {
-
+        File[] filesInClientDir = new File(CLIENT_STORAGE).listFiles();
+        String[][] fileList = Arrays.stream(filesInClientDir)
+                .collect(Collectors.toMap(f -> f.getName(), f -> f.length()))
+                .entrySet().stream()
+                .map(e -> new String[]{e.getKey(), String.valueOf(e.getValue())})
+                .toArray(String[][]::new);
+        modelClient.setData(fileList);
+        modelClient.fireTableDataChanged();
     }
 
     @Override
