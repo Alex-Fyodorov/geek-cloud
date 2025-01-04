@@ -72,21 +72,21 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                     if (messageType == CommandForServer.AUTH) {
                         if (authService.authentification(username, password)) {
                             logger.info("The client " + username + " has connected.");
-                            ctx.writeAndFlush(OutMessageType.MESSAGE + ConfirmConstants.CONFIRM);
+                            ctx.writeAndFlush(OutMessageType.CONFIRM + ConfirmConstants.CONFIRM);
                             ctx.writeAndFlush(String.format("%sWelcome %s!", OutMessageType.MESSAGE, username));
                             ctx.writeAndFlush(OutMessageType.LIST + username);
                             mutatePipeline(ctx, buf, username);
                             break;
                         } else {
                             logger.info("The client " + username + " has not connected.");
-                            ctx.writeAndFlush(OutMessageType.MESSAGE + ConfirmConstants.NOT_CONFIRM);
+                            ctx.writeAndFlush(OutMessageType.CONFIRM + ConfirmConstants.NOT_CONFIRM);
                             ctx.writeAndFlush(String.format("%sIncorrect username or password.", OutMessageType.MESSAGE));
                         }
                     }
                     if (messageType == CommandForServer.REG) {
                         if (authService.createNewAccount(username, password)) {
                             logger.info("A new client named " + username + " has signed up.");
-                            ctx.writeAndFlush(OutMessageType.MESSAGE + ConfirmConstants.CONFIRM);
+                            ctx.writeAndFlush(OutMessageType.CONFIRM + ConfirmConstants.CONFIRM);
                             ctx.writeAndFlush(String.format("%sWelcome %s!", OutMessageType.MESSAGE, username));
                             try {
                                 Files.createDirectory(Paths.get("./server_storage/" + username));
@@ -96,7 +96,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                             mutatePipeline(ctx, buf, username);
                             break;
                         } else {
-                            ctx.writeAndFlush(OutMessageType.MESSAGE + ConfirmConstants.NOT_CONFIRM);
+                            ctx.writeAndFlush(OutMessageType.CONFIRM + ConfirmConstants.NOT_CONFIRM);
                             logger.info(String.format("Registration was unsuccessful. Username: %s", username));
                             ctx.writeAndFlush(String.format("%sRegistration was unsuccessful.", OutMessageType.MESSAGE));
                         }

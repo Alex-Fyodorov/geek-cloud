@@ -34,6 +34,11 @@ public class OutServerHandler extends ChannelOutboundHandlerAdapter {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         executorService.execute(() -> {
             String message = (String) msg;
+            if (message.startsWith(OutMessageType.CONFIRM)) {
+                message = message.substring(OutMessageType.CONFIRM.length());
+                sendText(ctx, message, CommandForClient.CONFIRM);
+            }
+
             if (message.startsWith(OutMessageType.MESSAGE)) {
                 message = message.substring(OutMessageType.MESSAGE.length());
                 sendText(ctx, message, CommandForClient.MESSAGE);

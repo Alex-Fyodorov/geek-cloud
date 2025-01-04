@@ -6,13 +6,11 @@ import ru.gb.alex.cloud.client.handlers.RequestSender;
 import ru.gb.alex.cloud.client.network.Network;
 
 import javax.swing.*;
-import javax.swing.event.MouseInputAdapter;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
@@ -31,10 +29,10 @@ public class WindowRepresent extends JFrame implements Represent {
     JButton btnRename = new JButton("Rename");
     JButton btnDelete = new JButton("Delete");
     private final String[] columnsHeaders = new String[]{"Filename", "Size"};
-    private final CountDownLatch confirmLogin = new CountDownLatch(1);
+    private CountDownLatch confirmLogin = new CountDownLatch(1);
     private final DataModel modelClient = new DataModel(new String[0][0], columnsHeaders);
     private final DataModel modelServer = new DataModel(new String[0][0], columnsHeaders);
-    int row;
+
 
     public WindowRepresent() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -146,9 +144,10 @@ public class WindowRepresent extends JFrame implements Represent {
     }
 
     @Override
-    public void confirmLogin() {
+    public void confirmLogin(boolean confirm) {
         confirmLogin.countDown();
-        changeLoginButton();
+        if (confirm) changeLoginButton();
+        else confirmLogin = new CountDownLatch(1);
     }
 
     private void setTableProperties(JTable table) {
@@ -195,8 +194,8 @@ public class WindowRepresent extends JFrame implements Represent {
             @Override
             public void mousePressed(MouseEvent e) {
                 if ((e.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK) {
-                    int row2 = table.rowAtPoint(e.getPoint());
-                    table.addRowSelectionInterval(row2, row2);
+                    int row = table.rowAtPoint(e.getPoint());
+                    table.addRowSelectionInterval(row, row);
                 }
 
                 int row = table.rowAtPoint(e.getPoint());

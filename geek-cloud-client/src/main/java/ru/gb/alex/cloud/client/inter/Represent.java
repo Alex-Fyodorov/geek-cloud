@@ -7,5 +7,5 @@ public interface Represent {
     void showServerFileList(String message);
     void showClientFileList();
     void login(String username, String password, CommandForServer command);
-    void confirmLogin();
+    void confirmLogin(boolean confirm);
 }

@@ -70,6 +70,10 @@ public class LoginWindow extends JFrame {
     private void login(WindowRepresent windowRepresent) {
         String login = loginField.getText();
         String password = String.valueOf(passField.getPassword());
+        if (login == null || login.isBlank() || password.isBlank()) {
+            JOptionPane.showMessageDialog(this, "Login or password is not filled in.");
+            return;
+        }
         if (cbNewAcc.isSelected()) {
             JPasswordField passwordField = new JPasswordField();
             JOptionPane.showMessageDialog(this, passwordField,

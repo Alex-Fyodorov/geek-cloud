@@ -72,9 +72,12 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
                         represent.showServerFileList(message);
                         currentState = State.IDLE;
                     } else if (command == CommandForClient.MESSAGE) {
+                        represent.showMessage(message);
+                        currentState = State.IDLE;
+                    } else if (command == CommandForClient.CONFIRM) {
                         if (message.equals(ConfirmConstants.CONFIRM)) {
-                            represent.confirmLogin();
-                        } else represent.showMessage(message);
+                            represent.confirmLogin(true);
+                        } else represent.confirmLogin(false);
                         currentState = State.IDLE;
                     }
                 }
@@ -99,6 +102,7 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
     }
 
     private boolean checkFirstByte(byte firstByte) {
+        if (firstByte == CommandForClient.CONFIRM.getFirstMessageByte()) return true;
         if (firstByte == CommandForClient.MESSAGE.getFirstMessageByte()) return true;
         if (firstByte == CommandForClient.FILE_LIST.getFirstMessageByte()) return true;
         if (firstByte == CommandForClient.FILE.getFirstMessageByte()) return true;
