@@ -6,8 +6,11 @@ import ru.gb.alex.cloud.client.handlers.RequestSender;
 import ru.gb.alex.cloud.client.network.Network;
 
 import javax.swing.*;
+import javax.swing.event.MouseInputAdapter;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -31,6 +34,7 @@ public class WindowRepresent extends JFrame implements Represent {
     private final CountDownLatch confirmLogin = new CountDownLatch(1);
     private final DataModel modelClient = new DataModel(new String[0][0], columnsHeaders);
     private final DataModel modelServer = new DataModel(new String[0][0], columnsHeaders);
+    int row;
 
     public WindowRepresent() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -73,6 +77,8 @@ public class WindowRepresent extends JFrame implements Represent {
 
         JTable tableClient = new JTable(modelClient);
         JTable tableServer = new JTable(modelServer);
+        tableClient.setName("tableClient");
+        tableServer.setName("tableServer");
         setTableProperties(tableClient);
         setTableProperties(tableServer);
         showClientFileList();
@@ -165,15 +171,51 @@ public class WindowRepresent extends JFrame implements Represent {
     }
 
     private void addTableListener(JTable table) {
-        table.addMouseListener(new MouseListener() {
+        table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
+//                int r = table.rowAtPoint(e.getPoint());
+//                if (r >= 0 && r < table.getRowCount()) {
+//                    table.setRowSelectionInterval(r, r);
+//                } else {
+//                    table.clearSelection();
+//                }
+//
+//                int rowindex = table.getSelectedRow();
+//                if (rowindex < 0)
+//                    return;
+//                if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
+//                    String selectedCellValue = (String) table.getValueAt(table.getSelectedRow(), 0);
+//                    System.out.println(selectedCellValue);
+                    //JPopupMenu popup = createYourPopUp();
+                    //popup.show(e.getComponent(), e.getX(), e.getY());
+               // }
             }
 
             @Override
             public void mousePressed(MouseEvent e) {
-                String selectedCellValue = (String) table.getValueAt(table.getSelectedRow(), 0);
-                System.out.println(selectedCellValue);
+                if ((e.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK) {
+                    int row2 = table.rowAtPoint(e.getPoint());
+                    table.addRowSelectionInterval(row2, row2);
+                }
+
+                int row = table.rowAtPoint(e.getPoint());
+//                if (row >= 0 && row < table.getRowCount()) {
+//                    table.setRowSelectionInterval(row, row);
+//                } else {
+//                    table.clearSelection();
+//                }
+
+
+
+                int[] rows = table.getSelectedRows();
+                System.out.println("===================================");
+                for (int i : rows) {
+                    String tableName = (String) table.getName();
+                    String selectedCellValue = (String) table.getValueAt(i, 0);
+                    System.out.println(tableName + ": " + selectedCellValue);
+                }
+
             }
 
             @Override
