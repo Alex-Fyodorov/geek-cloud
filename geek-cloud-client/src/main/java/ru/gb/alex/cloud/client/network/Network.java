@@ -1,4 +1,4 @@
-package ru.gb.alex.cloud.client;
+package ru.gb.alex.cloud.client.network;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -8,6 +8,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import ru.gb.alex.cloud.client.handlers.InClientHandler;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;

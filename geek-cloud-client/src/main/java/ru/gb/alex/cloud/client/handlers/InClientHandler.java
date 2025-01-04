@@ -1,4 +1,4 @@
-package ru.gb.alex.cloud.client;
+package ru.gb.alex.cloud.client.handlers;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -6,6 +6,9 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.gb.alex.cloud.client.constants.CommandForClient;
+import ru.gb.alex.cloud.client.constants.ConfirmConstants;
+import ru.gb.alex.cloud.client.inter.Represent;
+import ru.gb.alex.cloud.client.inter.WindowRepresent;
 import ru.gb.alex.cloud.client.services.FileService;
 import ru.gb.alex.cloud.client.services.MessageService;
 
@@ -14,6 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class InClientHandler extends ChannelInboundHandlerAdapter {
+
 
     Logger logger = LogManager.getLogger(InClientHandler.class);
 
@@ -25,8 +29,10 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
         executorService = Executors.newSingleThreadExecutor();
         messageService = new MessageService();
         fileService = new FileService();
+        represent = new WindowRepresent();
     }
 
+    private final Represent represent;
     private final ExecutorService executorService;
     private final MessageService messageService;
     private final FileService fileService;
@@ -63,8 +69,12 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
                         command = CommandForClient.IDLE;
                         currentState = State.GET_FILE;
                     } else if (command == CommandForClient.FILE_LIST) {
+                        represent.showServerFileList(message);
                         currentState = State.IDLE;
                     } else if (command == CommandForClient.MESSAGE) {
+                        if (message.equals(ConfirmConstants.CONFIRM)) {
+                            represent.confirmLogin();
+                        } else represent.showMessage(message);
                         currentState = State.IDLE;
                     }
                 }
@@ -72,6 +82,7 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
                 if (currentState == State.GET_FILE) {
                     try {
                         fileService.getFile(buf, CLIENT_STORAGE + message, (() -> {
+                            represent.showClientFileList();
                             currentState = State.IDLE;
                             logger.info(String.format("File %s received", message));
                         }));

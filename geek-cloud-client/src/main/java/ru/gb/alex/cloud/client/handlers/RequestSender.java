@@ -1,4 +1,4 @@
-package ru.gb.alex.cloud.client;
+package ru.gb.alex.cloud.client.handlers;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -12,7 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class RequestSender {
-
 
     public static void sendFile(Path path, Channel channel,
                                 ChannelFutureListener finishListener) throws IOException {

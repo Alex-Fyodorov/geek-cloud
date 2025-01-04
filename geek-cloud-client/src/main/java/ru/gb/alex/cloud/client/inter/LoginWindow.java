@@ -1,10 +1,9 @@
 package ru.gb.alex.cloud.client.inter;
 
+import ru.gb.alex.cloud.client.constants.CommandForServer;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Arrays;
 
 public class LoginWindow extends JFrame {
 
@@ -16,15 +15,12 @@ public class LoginWindow extends JFrame {
     JTextField loginField = new JTextField();
     JPasswordField passField = new JPasswordField();
 
-    public LoginWindow(MainWindow mainWindow) {
+    public LoginWindow(WindowRepresent windowRepresent) {
         getRootPane().setDefaultButton(btnOk);
-        setLocationRelativeTo(mainWindow);
+        setLocationRelativeTo(windowRepresent);
         setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         setResizable(false);
-        btnOk.addActionListener(e -> {
-            if (login()) mainWindow.changeLoginButton();
-            dispose();
-        });
+        btnOk.addActionListener(e -> login(windowRepresent));
         btnClose.addActionListener(e -> dispose());
 
         GridBagLayout gridBagLayout = new GridBagLayout();
@@ -71,7 +67,7 @@ public class LoginWindow extends JFrame {
         setVisible(true);
     }
 
-    private boolean login() {
+    private void login(WindowRepresent windowRepresent) {
         String login = loginField.getText();
         String password = String.valueOf(passField.getPassword());
         if (cbNewAcc.isSelected()) {
@@ -80,20 +76,14 @@ public class LoginWindow extends JFrame {
                     "Confirm the password", JOptionPane.PLAIN_MESSAGE);
             String confirmPassword = String.valueOf(passwordField.getPassword());
             if (password.equals(confirmPassword)) {
-                // TODO registration;
-                System.out.println("=========================");
-                System.out.println("registration");
-                return true;
+                windowRepresent.login(login, password, CommandForServer.REG);
             } else {
                 JOptionPane.showMessageDialog(this, "Invalid password",
                         "Invalid password", JOptionPane.WARNING_MESSAGE);
-                return false;
             }
         } else {
-            // TODO login;
-            System.out.println("=========================");
-            System.out.println("login");
-            return true;
+            windowRepresent.login(login, password, CommandForServer.AUTH);
         }
+        dispose();
     }
 }

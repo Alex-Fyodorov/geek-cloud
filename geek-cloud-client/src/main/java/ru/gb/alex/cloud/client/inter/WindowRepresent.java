@@ -1,24 +1,32 @@
 package ru.gb.alex.cloud.client.inter;
 
+import io.netty.channel.Channel;
+import ru.gb.alex.cloud.client.handlers.RequestSender;
+import ru.gb.alex.cloud.client.network.Network;
+import ru.gb.alex.cloud.client.constants.CommandForServer;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.util.concurrent.CountDownLatch;
 
-public class MainWindow extends JFrame {
+public class WindowRepresent extends JFrame implements Represent {
 
     private static final int WINDOW_HEIGHT = 400;
     private static final int WINDOW_WIDTH = 600;
     private static final int WINDOW_POS_X = 200;
     private static final int WINDOW_POS_Y = 300;
-    JButton btnInput = new JButton("Input");
+    JButton btnLogin = new JButton("Login");
     JButton btnCopy = new JButton("Copy");
     JButton btnMove = new JButton("Move");
     JButton btnRename = new JButton("Rename");
     JButton btnDelete = new JButton("Delete");
     private String[] columnsHeaders = new String[]{"Filename", "Size"};
+    private String[] columnsHeaders1 = new String[]{"Filename1", "Size1"};
     private String[][] columnsHeaders2 = new String[][]{{"File111111111111111", "Size1"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}, {"File2", "Size2"}};
+    private CountDownLatch confirmLogin = new CountDownLatch(1);
 
-    public MainWindow() {
+    public WindowRepresent() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocation(WINDOW_POS_X, WINDOW_POS_Y);
         setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -38,8 +46,8 @@ public class MainWindow extends JFrame {
         constraints.anchor = GridBagConstraints.FIRST_LINE_END;
         constraints.weightx = 0;
         constraints.insets = new Insets(5, 0, 5, 5);
-        btnInput.addActionListener(e -> new LoginWindow(this)); // TODO listener
-        panelTop.add(btnInput, constraints);
+        btnLogin.addActionListener(e -> new LoginWindow(this));
+        panelTop.add(btnLogin, constraints);
         add(panelTop, BorderLayout.NORTH);
 
         btnCopy.addActionListener(e -> new LoginWindow(this)); // TODO listener
@@ -58,23 +66,11 @@ public class MainWindow extends JFrame {
         add(panelBottom, BorderLayout.SOUTH);
 
         JTable tableClient = new JTable(new DataModel(columnsHeaders2, columnsHeaders));
-//        tableClient.setForeground(Color.red);
-//        tableClient.setSelectionForeground(Color.yellow);
-//        tableClient.setSelectionBackground(Color.blue);
-//        tableClient.setShowGrid(false);
-        tableClient.setDefaultRenderer(String.class, new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value,
-                                        boolean isSelected, boolean hasFocus, int row, int column) {
-                JLabel label = (JLabel)super.getTableCellRendererComponent(table,
-                        (String) value, isSelected, hasFocus, row, column);
-                if (column == 1) label.setHorizontalAlignment(JLabel.RIGHT);
-                else label.setHorizontalAlignment(JLabel.LEFT);
-                return label;
-            }
-        });
+        setTableProperties(tableClient);
+
         //tableClient.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        JTable tableServer = new JTable(columnsHeaders2, columnsHeaders);
+        JTable tableServer = new JTable(new DataModel(columnsHeaders2, columnsHeaders1));
+        setTableProperties(tableServer);
         JPanel tablePanel = new JPanel(gridBagLayout);
         constraints.fill = GridBagConstraints.BOTH;
         constraints.weighty = 0.5;
@@ -93,7 +89,61 @@ public class MainWindow extends JFrame {
     }
 
     public void changeLoginButton() {
-        btnInput.setText("Exit");
-        btnInput.addActionListener(e -> System.exit(0));
+        btnLogin.setText("Exit");
+        btnLogin.addActionListener(e -> System.exit(0));
+    }
+
+    @Override
+    public void showMessage(String message) {
+        JOptionPane.showMessageDialog(this, message);
+    }
+
+    @Override
+    public void showServerFileList(String message) {
+
+    }
+
+    @Override
+    public void showClientFileList() {
+
+    }
+
+    @Override
+    public void login(String username, String password, CommandForServer command) {
+        RequestSender.sendAuth(username, password, getChannel(), command);
+        try {
+            confirmLogin.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void confirmLogin() {
+        confirmLogin.countDown();
+        changeLoginButton();
+    }
+
+    private void setTableProperties(JTable table) {
+//        table.setForeground(Color.red);
+//        table.setSelectionForeground(Color.yellow);
+//        table.setSelectionBackground(Color.blue);
+        table.setShowGrid(false);
+        table.setDefaultRenderer(String.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                             boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = (JLabel)super.getTableCellRendererComponent(table,
+                        (String) value, isSelected, hasFocus, row, column);
+
+                if (column == 1) label.setHorizontalAlignment(JLabel.RIGHT);
+                else label.setHorizontalAlignment(JLabel.LEFT);
+                return label;
+            }
+        });
+    }
+
+    private Channel getChannel() {
+        return Network.getInstance().getCurrentChannel();
     }
 }
