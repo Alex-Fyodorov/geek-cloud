@@ -8,6 +8,8 @@ import ru.gb.alex.cloud.client.network.Network;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
@@ -19,6 +21,7 @@ public class WindowRepresent extends JFrame implements Represent {
     private static final int WINDOW_WIDTH = 600;
     private static final int WINDOW_POS_X = 200;
     private static final int WINDOW_POS_Y = 300;
+    private static final String CLIENT_STORAGE = "./client_storage/";
     JButton btnLogin = new JButton("Login");
     JButton btnCopy = new JButton("Copy");
     JButton btnMove = new JButton("Move");
@@ -26,7 +29,6 @@ public class WindowRepresent extends JFrame implements Represent {
     JButton btnDelete = new JButton("Delete");
     private final String[] columnsHeaders = new String[]{"Filename", "Size"};
     private final CountDownLatch confirmLogin = new CountDownLatch(1);
-    private static final String CLIENT_STORAGE = "./client_storage/";
     private final DataModel modelClient = new DataModel(new String[0][0], columnsHeaders);
     private final DataModel modelServer = new DataModel(new String[0][0], columnsHeaders);
 
@@ -70,10 +72,12 @@ public class WindowRepresent extends JFrame implements Represent {
         add(panelBottom, BorderLayout.SOUTH);
 
         JTable tableClient = new JTable(modelClient);
-        setTableProperties(tableClient);
-        showClientFileList();
         JTable tableServer = new JTable(modelServer);
+        setTableProperties(tableClient);
         setTableProperties(tableServer);
+        showClientFileList();
+        addTableListener(tableClient);
+        addTableListener(tableServer);
 
         JPanel tablePanel = new JPanel(gridBagLayout);
         constraints.fill = GridBagConstraints.BOTH;
@@ -114,13 +118,15 @@ public class WindowRepresent extends JFrame implements Represent {
     @Override
     public void showClientFileList() {
         File[] filesInClientDir = new File(CLIENT_STORAGE).listFiles();
-        String[][] fileList = Arrays.stream(filesInClientDir)
-                .collect(Collectors.toMap(f -> f.getName(), f -> f.length()))
-                .entrySet().stream()
-                .map(e -> new String[]{e.getKey(), String.valueOf(e.getValue())})
-                .toArray(String[][]::new);
-        modelClient.setData(fileList);
-        modelClient.fireTableDataChanged();
+        if (filesInClientDir != null && filesInClientDir.length > 0) {
+            String[][] fileList = Arrays.stream(filesInClientDir)
+                    .collect(Collectors.toMap(File::getName, File::length))
+                    .entrySet().stream()
+                    .map(e -> new String[]{e.getKey(), String.valueOf(e.getValue())})
+                    .toArray(String[][]::new);
+            modelClient.setData(fileList);
+            modelClient.fireTableDataChanged();
+        }
     }
 
     @Override
@@ -149,11 +155,37 @@ public class WindowRepresent extends JFrame implements Represent {
             public Component getTableCellRendererComponent(JTable table, Object value,
                              boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel label = (JLabel)super.getTableCellRendererComponent(table,
-                        (String) value, isSelected, hasFocus, row, column);
+                        value, isSelected, hasFocus, row, column);
 
                 if (column == 1) label.setHorizontalAlignment(JLabel.RIGHT);
                 else label.setHorizontalAlignment(JLabel.LEFT);
                 return label;
+            }
+        });
+    }
+
+    private void addTableListener(JTable table) {
+        table.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                String selectedCellValue = (String) table.getValueAt(table.getSelectedRow(), 0);
+                System.out.println(selectedCellValue);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
             }
         });
     }
