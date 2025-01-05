@@ -12,7 +12,9 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
@@ -29,10 +31,12 @@ public class WindowRepresent extends JFrame implements Represent {
     JButton btnRename = new JButton("Rename");
     JButton btnDelete = new JButton("Delete");
     private final String[] columnsHeaders = new String[]{"Filename", "Size"};
-    private CountDownLatch confirmLogin = new CountDownLatch(1);
     private final DataModel modelClient = new DataModel(new String[0][0], columnsHeaders);
     private final DataModel modelServer = new DataModel(new String[0][0], columnsHeaders);
-
+    private CountDownLatch confirmLogin = new CountDownLatch(1);
+    private Integer row;
+    private String tableName;
+    private final List<String> selectedFiles;
 
     public WindowRepresent() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -40,6 +44,7 @@ public class WindowRepresent extends JFrame implements Represent {
         setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         setTitle("GeekCloud");
         setResizable(false);
+        selectedFiles = new ArrayList<>();
 
         GridBagLayout gridBagLayout = new GridBagLayout();
         GridBagConstraints constraints = new GridBagConstraints();
@@ -60,7 +65,7 @@ public class WindowRepresent extends JFrame implements Represent {
 
         btnCopy.addActionListener(e -> new LoginWindow(this)); // TODO listener
         btnMove.addActionListener(e -> new LoginWindow(this)); // TODO listener
-        btnRename.addActionListener(e -> new LoginWindow(this)); // TODO listener
+        btnRename.addActionListener(e -> System.out.println(selectedFiles)); // TODO listener
         btnDelete.addActionListener(e -> new LoginWindow(this)); // TODO listener
         JPanel panelBottom = new JPanel(gridBagLayout);
         constraints.weightx = 0.5;
@@ -158,8 +163,8 @@ public class WindowRepresent extends JFrame implements Represent {
         table.setDefaultRenderer(String.class, new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
-                             boolean isSelected, boolean hasFocus, int row, int column) {
-                JLabel label = (JLabel)super.getTableCellRendererComponent(table,
+                                                           boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = (JLabel) super.getTableCellRendererComponent(table,
                         value, isSelected, hasFocus, row, column);
 
                 if (column == 1) label.setHorizontalAlignment(JLabel.RIGHT);
@@ -172,63 +177,36 @@ public class WindowRepresent extends JFrame implements Represent {
     private void addTableListener(JTable table) {
         table.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseReleased(MouseEvent e) {
-//                int r = table.rowAtPoint(e.getPoint());
-//                if (r >= 0 && r < table.getRowCount()) {
-//                    table.setRowSelectionInterval(r, r);
-//                } else {
-//                    table.clearSelection();
-//                }
-//
-//                int rowindex = table.getSelectedRow();
-//                if (rowindex < 0)
-//                    return;
-//                if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
-//                    String selectedCellValue = (String) table.getValueAt(table.getSelectedRow(), 0);
-//                    System.out.println(selectedCellValue);
-                    //JPopupMenu popup = createYourPopUp();
-                    //popup.show(e.getComponent(), e.getX(), e.getY());
-               // }
-            }
-
-            @Override
             public void mousePressed(MouseEvent e) {
                 if ((e.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK) {
-                    int row = table.rowAtPoint(e.getPoint());
+                    row = table.rowAtPoint(e.getPoint());
+                    tableName = table.getName();
                     table.addRowSelectionInterval(row, row);
                 }
-
-                int row = table.rowAtPoint(e.getPoint());
-//                if (row >= 0 && row < table.getRowCount()) {
-//                    table.setRowSelectionInterval(row, row);
-//                } else {
-//                    table.clearSelection();
-//                }
-
-
-
-                int[] rows = table.getSelectedRows();
-                System.out.println("===================================");
-                for (int i : rows) {
-                    String tableName = (String) table.getName();
-                    String selectedCellValue = (String) table.getValueAt(i, 0);
-                    System.out.println(tableName + ": " + selectedCellValue);
+                if ((e.getModifiers() & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK) {
+                    int currentRow = table.rowAtPoint(e.getPoint());
+                    String currentTableName = table.getName();
+                    if (currentTableName.equals(tableName) && row != null) {
+                        table.addRowSelectionInterval(currentRow, row);
+                    }
                 }
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
+                row = table.rowAtPoint(e.getPoint());
+                tableName = table.getName();
+                getSelectedFileList(table);
             }
         });
+    }
+
+    private void getSelectedFileList(JTable table) {
+        selectedFiles.clear();
+        Arrays.stream(table.getSelectedRows())
+                .mapToObj(i -> (String) table.getValueAt(i, 0))
+                .forEach(selectedFiles::add);
+
+//        int[] rows = table.getSelectedRows();
+//        for (int i : rows) {
+//            selectedFiles.add((String) table.getValueAt(i, 0));
+//        }
     }
 
     private Channel getChannel() {
