@@ -73,6 +73,7 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                     }
                     if (command == CommandForServer.SEND_FILE_TO_CLIENT) {
                         ctx.writeAndFlush(OutMessageType.FILE + path);
+                        ctx.writeAndFlush(OutMessageType.LIST + username);
                         currentState = State.IDLE;
                     }
                     if (command == CommandForServer.RENAME) {
