@@ -70,13 +70,11 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                         currentState = State.GET_FILE;
                     }
                     if (command == CommandForServer.SEND_FILE) {
-                        OutServerHandler outServerHandler = ctx.pipeline().get(OutServerHandler.class);
                         CountDownLatch countDownLatch = new CountDownLatch(1);
-                        outServerHandler.setCountDownLatch(countDownLatch);
-                        ctx.writeAndFlush(OutMessageType.FILE + path);
+                        ctx.writeAndFlush(OutMessageType.FILE + path,
+                                ctx.newPromise().addListener(f -> countDownLatch.countDown()));
                         try {
                             countDownLatch.await();
-                            Thread.sleep(50);
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
                         }
@@ -124,9 +122,7 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                     try {
                         fileService.getFile(buf, path, (() -> {
                             currentState = State.IDLE;
-                            ctx.writeAndFlush(OutMessageType.LIST + username);
-                            ctx.writeAndFlush(String.format("%sThe \"%s\" file was successfully " +
-                                    "received on the server", OutMessageType.MESSAGE, message));
+                            //ctx.writeAndFlush(OutMessageType.LIST + username);
                             logger.info(String.format("The \"%s/%s\" file was successfully " +
                                     "received on the server", username, message));
                         }));

@@ -213,11 +213,6 @@ public class WindowRepresent extends JFrame implements Represent {
         Arrays.stream(table.getSelectedRows())
                 .mapToObj(i -> (String) table.getValueAt(i, 0))
                 .forEach(selectedFiles::add);
-
-//        int[] rows = table.getSelectedRows();
-//        for (int i : rows) {
-//            selectedFiles.add((String) table.getValueAt(i, 0));
-//        }
     }
 
     private void buttonsListener(ButtonsCommand command) {
@@ -231,43 +226,39 @@ public class WindowRepresent extends JFrame implements Represent {
             } else {
                 try {
                     clientRequest(command);
-                } catch (IOException e) {
+                } catch (IOException | InterruptedException e) {
                     throw new RuntimeException(e);
                 }
             }
         }
     }
 
-    private void clientRequest(ButtonsCommand command) throws IOException {
+    private void clientRequest(ButtonsCommand command) throws IOException, InterruptedException {
+
         if (command != ButtonsCommand.DELETE) {
             for (String f : selectedFiles) {
+                CountDownLatch countDownLatch = new CountDownLatch(1);
                 Path filePath = Paths.get(CLIENT_STORAGE + f);
                 RequestSender.sendFile(filePath, getChannel(), future -> {
+                    if (future.isSuccess()) {
+                        logger.info("The file has been sent successfully: " + filePath);
+                    }
                     if (!future.isSuccess()) {
                         future.cause().printStackTrace();
                         logger.info("Sending the file failed: " + filePath);
                     }
-                    if (future.isSuccess()) {
-                        logger.info("The file has been sent successfully: " + filePath);
-                    }
+                    countDownLatch.countDown();
                 });
+                countDownLatch.await();
             }
-        }
-        try {
-            Thread.sleep(50);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
         if (command != ButtonsCommand.COPY) {
             for (String f : selectedFiles) {
                 Files.delete(Paths.get(CLIENT_STORAGE + f));
             }
         }
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        Thread.sleep(50);
+        RequestSender.sendRequest("", getChannel(), CommandForServer.FILE_LIST);
         showClientFileList();
     }
 
@@ -310,3 +301,18 @@ public class WindowRepresent extends JFrame implements Represent {
         return Network.getInstance().getCurrentChannel();
     }
 }
+
+// TODO сделать выход, не вызывающий ошибок
+// TODO удаление последней строки в таблице приводит к ошибке
+// TODO передача файлов с клиента на сервис
+// TODO кнопка переименования
+// TODO убрать принты из входящего потока клиента
+
+/*
+Проблемы:
+1. На данный момент приложение передаёт только файлы до 4,3 Гб,
+   после чего жалуется, что закончилась память.
+2. После отправки относительно большого количества данных с клиента
+   прилетающий навстречу файллист ломается, из-за чего блокируется
+   входящий поток.
+ */

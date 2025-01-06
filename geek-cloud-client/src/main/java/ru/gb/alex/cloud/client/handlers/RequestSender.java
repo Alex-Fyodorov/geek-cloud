@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.CountDownLatch;
 
 public class RequestSender {
 
@@ -33,7 +34,8 @@ public class RequestSender {
         }
     }
 
-    public static void sendAuth(String username, String password, Channel channel, CommandForServer command) {
+    public static void sendAuth(String username, String password, Channel channel,
+                                CommandForServer command) {
         byte[] usernameBytes = username.getBytes(StandardCharsets.UTF_8);
         byte[] passBytes = password.getBytes(StandardCharsets.UTF_8);
         ByteBuf buf = ByteBufAllocator.DEFAULT.directBuffer(1 + 4 + usernameBytes.length + 4 + passBytes.length);

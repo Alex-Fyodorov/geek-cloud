@@ -24,14 +24,9 @@ import java.util.stream.Collectors;
 public class OutServerHandler extends ChannelOutboundHandlerAdapter {
     private final ExecutorService executorService;
     private static final String SERVER_STORAGE = "./server_storage/";
-    private CountDownLatch countDownLatch;
 
     public OutServerHandler() {
         executorService = Executors.newSingleThreadExecutor();
-    }
-
-    public void setCountDownLatch(CountDownLatch countDownLatch) {
-        this.countDownLatch = countDownLatch;
     }
 
     Logger logger = LogManager.getLogger(OutServerHandler.class);
@@ -96,7 +91,7 @@ public class OutServerHandler extends ChannelOutboundHandlerAdapter {
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {
-                    countDownLatch.countDown();
+                    promise.setSuccess();
                 }
             }
         });
