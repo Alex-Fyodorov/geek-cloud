@@ -5,14 +5,15 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.gb.alex.cloud.server.constants.OutMessageType;
 import ru.gb.alex.cloud.server.constants.CommandForServer;
+import ru.gb.alex.cloud.server.constants.OutMessageType;
 import ru.gb.alex.cloud.server.services.FileService;
 import ru.gb.alex.cloud.server.services.MessageService;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -22,7 +23,6 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
     private static final String SERVER_STORAGE = "./server_storage/";
     private final MessageService messageService;
     private final FileService fileService;
-
     Logger logger = LogManager.getLogger(FileHandler.class);
 
     public FileHandler(String username) {
@@ -32,10 +32,7 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
         fileService = new FileService();
     }
 
-    public enum State {
-        IDLE, GET_MESSAGE, MESSAGE_END, GET_FILE
-    }
-
+    public enum State {IDLE, GET_MESSAGE, MESSAGE_END, GET_FILE}
     private State currentState = State.IDLE;
     private CommandForServer command;
     private String message;
@@ -62,17 +59,27 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                 if (currentState == State.GET_MESSAGE) {
                     messageService.readMessage(buf, (m -> {
                         message = m;
+                        logger.info(String.format("%s: %s - %s", username, command, message));
                         path = String.format("%s%s/%s", SERVER_STORAGE, username, message);
                         currentState = State.MESSAGE_END;
                     }));
                 }
 
                 if (currentState == State.MESSAGE_END) {
-                    if (command == CommandForServer.GET_FILE_FROM_CLIENT) {
+                    if (command == CommandForServer.GET_FILE) {
                         currentState = State.GET_FILE;
                     }
-                    if (command == CommandForServer.SEND_FILE_TO_CLIENT) {
+                    if (command == CommandForServer.SEND_FILE) {
+                        OutServerHandler outServerHandler = ctx.pipeline().get(OutServerHandler.class);
+                        CountDownLatch countDownLatch = new CountDownLatch(1);
+                        outServerHandler.setCountDownLatch(countDownLatch);
                         ctx.writeAndFlush(OutMessageType.FILE + path);
+                        try {
+                            countDownLatch.await();
+                            Thread.sleep(50);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
                         ctx.writeAndFlush(OutMessageType.LIST + username);
                         currentState = State.IDLE;
                     }
@@ -94,6 +101,7 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                     if (command == CommandForServer.DELETE) {
                         try {
                             if (Files.deleteIfExists(Paths.get(path))) {
+                                Thread.sleep(50);
                                 ctx.writeAndFlush(OutMessageType.LIST + username);
                                 logger.info(String.format("File \"%s/%s\" was deleted.",
                                         username, message));
@@ -101,7 +109,7 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                                 ctx.writeAndFlush(String.format("%sFile \"%s\" does not exist.",
                                         OutMessageType.MESSAGE, message));
                             }
-                        } catch (IOException e) {
+                        } catch (IOException | InterruptedException e) {
                             throw new RuntimeException(e);
                         }
                         currentState = State.IDLE;
@@ -135,8 +143,8 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
     }
 
     private boolean checkFirstByte(byte firstByte) {
-        if (firstByte == CommandForServer.GET_FILE_FROM_CLIENT.getFirstMessageByte()) return true;
-        if (firstByte == CommandForServer.SEND_FILE_TO_CLIENT.getFirstMessageByte()) return true;
+        if (firstByte == CommandForServer.GET_FILE.getFirstMessageByte()) return true;
+        if (firstByte == CommandForServer.SEND_FILE.getFirstMessageByte()) return true;
         if (firstByte == CommandForServer.RENAME.getFirstMessageByte()) return true;
         if (firstByte == CommandForServer.DELETE.getFirstMessageByte()) return true;
         if (firstByte == CommandForServer.FILE_LIST.getFirstMessageByte()) return true;

@@ -16,6 +16,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -23,9 +24,14 @@ import java.util.stream.Collectors;
 public class OutServerHandler extends ChannelOutboundHandlerAdapter {
     private final ExecutorService executorService;
     private static final String SERVER_STORAGE = "./server_storage/";
+    private CountDownLatch countDownLatch;
 
     public OutServerHandler() {
         executorService = Executors.newSingleThreadExecutor();
+    }
+
+    public void setCountDownLatch(CountDownLatch countDownLatch) {
+        this.countDownLatch = countDownLatch;
     }
 
     Logger logger = LogManager.getLogger(OutServerHandler.class);
@@ -89,6 +95,8 @@ public class OutServerHandler extends ChannelOutboundHandlerAdapter {
                     sendText(ctx, response, CommandForClient.MESSAGE);
                 } catch (IOException e) {
                     e.printStackTrace();
+                } finally {
+                    countDownLatch.countDown();
                 }
             }
         });

@@ -3,7 +3,6 @@ package ru.gb.alex.cloud.client.handlers;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
-import ru.gb.alex.cloud.client.constants.CommandForClient;
 import ru.gb.alex.cloud.client.constants.CommandForServer;
 
 import java.io.IOException;
@@ -22,7 +21,7 @@ public class RequestSender {
         byte[] fileNameBytes = path.getFileName().toString().getBytes(StandardCharsets.UTF_8);
         ByteBuf buf = ByteBufAllocator.DEFAULT.directBuffer(1 + 4 + fileNameBytes.length + 8);
 
-        buf.writeByte(CommandForServer.GET_FILE_FROM_CLIENT.getFirstMessageByte());
+        buf.writeByte(CommandForServer.GET_FILE.getFirstMessageByte());
         buf.writeInt(path.getFileName().toString().length());
         buf.writeBytes(fileNameBytes);
         buf.writeLong(Files.size(path));

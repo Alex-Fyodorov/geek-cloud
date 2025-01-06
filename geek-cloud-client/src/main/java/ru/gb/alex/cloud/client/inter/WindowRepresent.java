@@ -253,10 +253,20 @@ public class WindowRepresent extends JFrame implements Represent {
                 });
             }
         }
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         if (command != ButtonsCommand.COPY) {
             for (String f : selectedFiles) {
                 Files.delete(Paths.get(CLIENT_STORAGE + f));
             }
+        }
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
         showClientFileList();
     }
@@ -264,7 +274,7 @@ public class WindowRepresent extends JFrame implements Represent {
     private void serverRequest(ButtonsCommand command) {
         if (command != ButtonsCommand.DELETE) {
             selectedFiles.forEach(f -> {
-                RequestSender.sendRequest(f, getChannel(), CommandForServer.SEND_FILE_TO_CLIENT);
+                RequestSender.sendRequest(f, getChannel(), CommandForServer.SEND_FILE);
             });
         }
         if (command != ButtonsCommand.COPY) {
