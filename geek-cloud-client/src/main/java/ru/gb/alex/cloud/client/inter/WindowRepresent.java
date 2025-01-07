@@ -258,7 +258,6 @@ public class WindowRepresent extends JFrame implements Represent {
             }
         }
         Thread.sleep(50);
-        RequestSender.sendRequest("", getChannel(), CommandForServer.FILE_LIST);
         showClientFileList();
     }
 
@@ -312,7 +311,4 @@ public class WindowRepresent extends JFrame implements Represent {
 Проблемы:
 1. На данный момент приложение передаёт только файлы до 4,3 Гб,
    после чего жалуется, что закончилась память.
-2. После отправки относительно большого количества данных с клиента
-   прилетающий навстречу файллист ломается, из-за чего блокируется
-   входящий поток.
  */

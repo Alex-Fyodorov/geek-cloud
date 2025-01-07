@@ -52,7 +52,6 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
                         command = CommandForClient.getDataTypeFromByte(firstByte);
                         System.out.println("============ " + command);
                         currentState = State.GET_MESSAGE;
-                        printState();
                     } else {
                         logger.info("ERROR: Invalid first byte - " + firstByte);
                     }
@@ -63,7 +62,6 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
                         message = m;
                         logger.info(String.format("%s - %s", command, message));
                         currentState = State.MESSAGE_END;
-                        printState();
                     }));
                 }
 
@@ -71,21 +69,17 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
                     if (command == CommandForClient.FILE) {
                         command = CommandForClient.IDLE;
                         currentState = State.GET_FILE;
-                        printState();
                     } else if (command == CommandForClient.FILE_LIST) {
                         represent.showServerFileList(message);
                         currentState = State.IDLE;
-                        printState();
                     } else if (command == CommandForClient.MESSAGE) {
                         represent.showMessage(message);
                         currentState = State.IDLE;
-                        printState();
                     } else if (command == CommandForClient.CONFIRM) {
                         if (message.equals(ConfirmConstants.CONFIRM)) {
                             represent.confirmLogin(true);
                         } else represent.confirmLogin(false);
                         currentState = State.IDLE;
-                        printState();
                     }
                 }
 
@@ -94,7 +88,6 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
                         fileService.getFile(buf, CLIENT_STORAGE + message, (() -> {
                             represent.showClientFileList();
                             currentState = State.IDLE;
-                            printState();
                             logger.info(String.format("File %s received", message));
                         }));
                     } catch (IOException e) {
@@ -121,9 +114,5 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         cause.printStackTrace();
         ctx.close();
-    }
-
-    private void printState() {
-        System.out.println("=== " + currentState);
     }
 }

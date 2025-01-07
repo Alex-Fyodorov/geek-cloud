@@ -122,7 +122,7 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                     try {
                         fileService.getFile(buf, path, (() -> {
                             currentState = State.IDLE;
-                            //ctx.writeAndFlush(OutMessageType.LIST + username);
+                            ctx.writeAndFlush(OutMessageType.LIST + username);
                             logger.info(String.format("The \"%s/%s\" file was successfully " +
                                     "received on the server", username, message));
                         }));
