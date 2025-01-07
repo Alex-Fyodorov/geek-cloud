@@ -76,8 +76,9 @@ public class LoginWindow extends JFrame {
         }
         if (cbNewAcc.isSelected()) {
             JPasswordField passwordField = new JPasswordField();
-            JOptionPane.showMessageDialog(this, passwordField,
-                    "Confirm the password", JOptionPane.PLAIN_MESSAGE);
+            Object[] paneContent = new Object[]{"Confirm the password", passwordField};
+            JOptionPane.showMessageDialog(this, paneContent,
+                    "Confirm", JOptionPane.PLAIN_MESSAGE);
             String confirmPassword = String.valueOf(passwordField.getPassword());
             if (password.equals(confirmPassword)) {
                 windowRepresent.login(login, password, CommandForServer.REG);

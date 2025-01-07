@@ -1,6 +1,7 @@
 package ru.gb.alex.cloud.client.inter;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.gb.alex.cloud.client.constants.ButtonsCommand;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -161,7 +163,7 @@ public class WindowRepresent extends JFrame implements Represent {
             changeLoginButton();
             btnCopy.addActionListener(e -> buttonsListener(ButtonsCommand.COPY));
             btnMove.addActionListener(e -> buttonsListener(ButtonsCommand.MOVE));
-            btnRename.addActionListener(e -> System.out.println(selectedFiles));
+            btnRename.addActionListener(e -> renameListener());
             btnDelete.addActionListener(e -> buttonsListener(ButtonsCommand.DELETE));
         } else confirmLogin = new CountDownLatch(1);
     }
@@ -233,8 +235,56 @@ public class WindowRepresent extends JFrame implements Represent {
         }
     }
 
-    private void clientRequest(ButtonsCommand command) throws IOException, InterruptedException {
+    private void renameListener() {
+        if (selectedFiles.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No files are selected");
+            return;
+        }
+        if (selectedFiles.size() > 1) {
+            JOptionPane.showMessageDialog(this, "More than one file selected");
+            return;
+        }
+        String fileName = selectedFiles.get(0);
+        JTextField newNameField = new JTextField(fileName);
+        Object[] paneContent = new Object[]{"Input new file name", newNameField};
+        int result = JOptionPane.showConfirmDialog(this, paneContent,
+                "New file name", JOptionPane.OK_CANCEL_OPTION);
+        String newName = String.valueOf(newNameField.getText());
+        System.out.println(newName);
+        if (result == JOptionPane.OK_OPTION) {
+            if (selectedTableName.equals(TABLE_SERVER)) {
+                RequestSender.sendRequest(String.format("%s %s", fileName, newName),
+                        getChannel(), CommandForServer.RENAME);
+            } else if (selectedTableName.equals(TABLE_CLIENT)) {
+                List<String> exceptionList = checkRenamableFiles(fileName, newName);
+                if (exceptionList.isEmpty()) {
+                    try {
+                        Files.move(Paths.get(CLIENT_STORAGE + fileName),
+                                Paths.get(CLIENT_STORAGE + newName), StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    showClientFileList();
+                } else {
+                    JOptionPane.showMessageDialog(this, exceptionList.toArray(),
+                            "Warning!", JOptionPane.WARNING_MESSAGE);
+                }
+            }
+        }
+    }
 
+    private List<String> checkRenamableFiles(String oldName, String newName) {
+        List<String> exceptionList = new ArrayList<>();
+        if (!Files.exists(Paths.get(CLIENT_STORAGE + oldName))) {
+            exceptionList.add(String.format("File \"%s\" does not exist.", oldName));
+        }
+        if (Files.exists(Paths.get(CLIENT_STORAGE + newName))) {
+            exceptionList.add(String.format("File \"%s\" already exists.", newName));
+        }
+        return exceptionList;
+    }
+
+    private void clientRequest(ButtonsCommand command) throws IOException, InterruptedException {
         if (command != ButtonsCommand.DELETE) {
             for (String f : selectedFiles) {
                 CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -303,9 +353,6 @@ public class WindowRepresent extends JFrame implements Represent {
 
 // TODO сделать выход, не вызывающий ошибок
 // TODO удаление последней строки в таблице приводит к ошибке
-// TODO передача файлов с клиента на сервис
-// TODO кнопка переименования
-// TODO убрать принты из входящего потока клиента
 
 /*
 Проблемы:
