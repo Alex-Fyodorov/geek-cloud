@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.gb.alex.cloud.server.constants.CommandForServer;
 import ru.gb.alex.cloud.server.constants.OutMessageType;
+import ru.gb.alex.cloud.server.constants.StringConstants;
 import ru.gb.alex.cloud.server.services.FileService;
 import ru.gb.alex.cloud.server.services.MessageService;
 
@@ -20,7 +21,6 @@ import java.util.concurrent.Executors;
 public class FileHandler extends ChannelInboundHandlerAdapter {
     private final String username;
     private final ExecutorService executorService;
-    private static final String SERVER_STORAGE = "./server_storage/";
     private final MessageService messageService;
     private final FileService fileService;
     Logger logger = LogManager.getLogger(FileHandler.class);
@@ -60,7 +60,7 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                     messageService.readMessage(buf, (m -> {
                         message = m;
                         logger.info(String.format("%s: %s - %s", username, command, message));
-                        path = String.format("%s%s/%s", SERVER_STORAGE, username, message);
+                        path = String.format("%s%s/%s", StringConstants.SERVER_STORAGE, username, message);
                         currentState = State.MESSAGE_END;
                     }));
                 }
@@ -83,7 +83,7 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                     }
                     if (command == CommandForServer.RENAME) {
                         String[] names = message.split("\\s");
-                        path = String.format("%s%s/%s", SERVER_STORAGE, username, names[0]);
+                        path = String.format("%s%s/%s", StringConstants.SERVER_STORAGE, username, names[0]);
                         if (checkRenamableFiles(ctx, names[0], names[1])) {
                             try {
                                 Files.move(Paths.get(path), Paths.get(path).resolveSibling(names[1]));
@@ -149,8 +149,8 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
 
     private boolean checkRenamableFiles(ChannelHandlerContext ctx, String oldName, String newName) {
         int count = 0;
-        String oldPath = String.format("%s%s/%s", SERVER_STORAGE, username, oldName);
-        String newPath = String.format("%s%s/%s", SERVER_STORAGE, username, newName);
+        String oldPath = String.format("%s%s/%s", StringConstants.SERVER_STORAGE, username, oldName);
+        String newPath = String.format("%s%s/%s", StringConstants.SERVER_STORAGE, username, newName);
         if (Files.exists(Paths.get(newPath))) {
             count++;
             ctx.writeAndFlush(String.format("%sFile \"%s\" already exists.",

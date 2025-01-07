@@ -1,11 +1,9 @@
 package ru.gb.alex.cloud.client.inter;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import ru.gb.alex.cloud.client.constants.ButtonsCommand;
 import ru.gb.alex.cloud.client.constants.CommandForServer;
+import ru.gb.alex.cloud.client.constants.StringConstants;
 import ru.gb.alex.cloud.client.handlers.RequestSender;
 import ru.gb.alex.cloud.client.network.Network;
 
@@ -16,11 +14,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,18 +26,15 @@ public class WindowRepresent extends JFrame implements Represent {
     private static final int WINDOW_WIDTH = 600;
     private static final int WINDOW_POS_X = 200;
     private static final int WINDOW_POS_Y = 300;
-    private static final String CLIENT_STORAGE = "./client_storage/";
-    private static final String TABLE_SERVER = "tableServer";
-    private static final String TABLE_CLIENT = "tableClient";
     JButton btnLogin = new JButton("Login");
     JButton btnCopy = new JButton("Copy");
     JButton btnMove = new JButton("Move");
     JButton btnRename = new JButton("Rename");
     JButton btnDelete = new JButton("Delete");
-    Logger logger = LogManager.getLogger(WindowRepresent.class);
     private final String[] columnsHeaders = new String[]{"Filename", "Size"};
     private final DataModel modelClient = new DataModel(new String[0][0], columnsHeaders);
     private final DataModel modelServer = new DataModel(new String[0][0], columnsHeaders);
+    private final ButtonsListener buttonsListener;
     private CountDownLatch confirmLogin = new CountDownLatch(1);
     private Integer row;
     private String selectedTableName;
@@ -56,6 +46,7 @@ public class WindowRepresent extends JFrame implements Represent {
         setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         setTitle("GeekCloud");
         setResizable(false);
+        buttonsListener = new ButtonsListener(this);
         selectedFiles = new ArrayList<>();
 
         GridBagLayout gridBagLayout = new GridBagLayout();
@@ -88,8 +79,8 @@ public class WindowRepresent extends JFrame implements Represent {
 
         JTable tableClient = new JTable(modelClient);
         JTable tableServer = new JTable(modelServer);
-        tableClient.setName(TABLE_CLIENT);
-        tableServer.setName(TABLE_SERVER);
+        tableClient.setName(StringConstants.TABLE_CLIENT);
+        tableServer.setName(StringConstants.TABLE_SERVER);
         setTableProperties(tableClient);
         setTableProperties(tableServer);
         showClientFileList();
@@ -134,7 +125,7 @@ public class WindowRepresent extends JFrame implements Represent {
 
     @Override
     public void showClientFileList() {
-        File[] filesInClientDir = new File(CLIENT_STORAGE).listFiles();
+        File[] filesInClientDir = new File(StringConstants.CLIENT_STORAGE).listFiles();
         if (filesInClientDir != null && filesInClientDir.length > 0) {
             String[][] fileList = Arrays.stream(filesInClientDir)
                     .collect(Collectors.toMap(File::getName, File::length))
@@ -161,10 +152,10 @@ public class WindowRepresent extends JFrame implements Represent {
         confirmLogin.countDown();
         if (confirm) {
             changeLoginButton();
-            btnCopy.addActionListener(e -> buttonsListener(ButtonsCommand.COPY));
-            btnMove.addActionListener(e -> buttonsListener(ButtonsCommand.MOVE));
-            btnRename.addActionListener(e -> renameListener());
-            btnDelete.addActionListener(e -> buttonsListener(ButtonsCommand.DELETE));
+            btnCopy.addActionListener(e -> buttonsListener.buttonsListener(ButtonsCommand.COPY, selectedFiles, selectedTableName));
+            btnMove.addActionListener(e -> buttonsListener.buttonsListener(ButtonsCommand.MOVE, selectedFiles, selectedTableName));
+            btnRename.addActionListener(e -> buttonsListener.renameListener(selectedFiles, selectedTableName));
+            btnDelete.addActionListener(e -> buttonsListener.buttonsListener(ButtonsCommand.DELETE, selectedFiles, selectedTableName));
         } else confirmLogin = new CountDownLatch(1);
     }
 
@@ -215,135 +206,6 @@ public class WindowRepresent extends JFrame implements Represent {
         Arrays.stream(table.getSelectedRows())
                 .mapToObj(i -> (String) table.getValueAt(i, 0))
                 .forEach(selectedFiles::add);
-    }
-
-    private void buttonsListener(ButtonsCommand command) {
-        if (selectedFiles.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No files are selected");
-            return;
-        }
-        if (actionMessage(command) == JOptionPane.YES_OPTION) {
-            if (selectedTableName.equals(TABLE_SERVER)) {
-                serverRequest(command);
-            } else {
-                try {
-                    clientRequest(command);
-                } catch (IOException | InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-    }
-
-    private void renameListener() {
-        if (selectedFiles.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No files are selected");
-            return;
-        }
-        if (selectedFiles.size() > 1) {
-            JOptionPane.showMessageDialog(this, "More than one file selected");
-            return;
-        }
-        String fileName = selectedFiles.get(0);
-        JTextField newNameField = new JTextField(fileName);
-        Object[] paneContent = new Object[]{"Input new file name", newNameField};
-        int result = JOptionPane.showConfirmDialog(this, paneContent,
-                "New file name", JOptionPane.OK_CANCEL_OPTION);
-        String newName = String.valueOf(newNameField.getText());
-        System.out.println(newName);
-        if (result == JOptionPane.OK_OPTION) {
-            if (selectedTableName.equals(TABLE_SERVER)) {
-                RequestSender.sendRequest(String.format("%s %s", fileName, newName),
-                        getChannel(), CommandForServer.RENAME);
-            } else if (selectedTableName.equals(TABLE_CLIENT)) {
-                List<String> exceptionList = checkRenamableFiles(fileName, newName);
-                if (exceptionList.isEmpty()) {
-                    try {
-                        Files.move(Paths.get(CLIENT_STORAGE + fileName),
-                                Paths.get(CLIENT_STORAGE + newName), StandardCopyOption.REPLACE_EXISTING);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    showClientFileList();
-                } else {
-                    JOptionPane.showMessageDialog(this, exceptionList.toArray(),
-                            "Warning!", JOptionPane.WARNING_MESSAGE);
-                }
-            }
-        }
-    }
-
-    private List<String> checkRenamableFiles(String oldName, String newName) {
-        List<String> exceptionList = new ArrayList<>();
-        if (!Files.exists(Paths.get(CLIENT_STORAGE + oldName))) {
-            exceptionList.add(String.format("File \"%s\" does not exist.", oldName));
-        }
-        if (Files.exists(Paths.get(CLIENT_STORAGE + newName))) {
-            exceptionList.add(String.format("File \"%s\" already exists.", newName));
-        }
-        return exceptionList;
-    }
-
-    private void clientRequest(ButtonsCommand command) throws IOException, InterruptedException {
-        if (command != ButtonsCommand.DELETE) {
-            for (String f : selectedFiles) {
-                CountDownLatch countDownLatch = new CountDownLatch(1);
-                Path filePath = Paths.get(CLIENT_STORAGE + f);
-                RequestSender.sendFile(filePath, getChannel(), future -> {
-                    if (future.isSuccess()) {
-                        logger.info("The file has been sent successfully: " + filePath);
-                    }
-                    if (!future.isSuccess()) {
-                        future.cause().printStackTrace();
-                        logger.info("Sending the file failed: " + filePath);
-                    }
-                    countDownLatch.countDown();
-                });
-                countDownLatch.await();
-            }
-        }
-        if (command != ButtonsCommand.COPY) {
-            for (String f : selectedFiles) {
-                Files.delete(Paths.get(CLIENT_STORAGE + f));
-            }
-        }
-        Thread.sleep(50);
-        showClientFileList();
-    }
-
-    private void serverRequest(ButtonsCommand command) {
-        if (command != ButtonsCommand.DELETE) {
-            selectedFiles.forEach(f -> {
-                RequestSender.sendRequest(f, getChannel(), CommandForServer.SEND_FILE);
-            });
-        }
-        if (command != ButtonsCommand.COPY) {
-            selectedFiles.forEach(f -> {
-                RequestSender.sendRequest(f, getChannel(), CommandForServer.DELETE);
-            });
-        }
-        showClientFileList();
-    }
-
-    private int actionMessage(ButtonsCommand command) {
-        StringBuilder message = new StringBuilder("\nDo you really want\nto ")
-                .append(command.getMessage())
-                .append(" the selected files\nfrom the ");
-        if (selectedTableName.equals(TABLE_SERVER)) message.append("Server to the Client?");
-        else message.append("Client to the Server?");
-        if (command == ButtonsCommand.DELETE) {
-            message.delete(64, message.length())
-                    .append(" storage?");
-        }
-
-        List<String> selectedFilesCopy = new ArrayList<>(selectedFiles);
-        selectedFilesCopy.add(message.toString());
-
-        return JOptionPane.showConfirmDialog(this,
-                selectedFilesCopy.toArray(),
-                "Confirm the action!",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE);
     }
 
     private Channel getChannel() {

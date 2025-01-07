@@ -6,7 +6,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.gb.alex.cloud.client.constants.CommandForClient;
-import ru.gb.alex.cloud.client.constants.ConfirmConstants;
+import ru.gb.alex.cloud.client.constants.StringConstants;
 import ru.gb.alex.cloud.client.inter.Represent;
 import ru.gb.alex.cloud.client.inter.WindowRepresent;
 import ru.gb.alex.cloud.client.services.FileService;
@@ -76,7 +76,7 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
                         represent.showMessage(message);
                         currentState = State.IDLE;
                     } else if (command == CommandForClient.CONFIRM) {
-                        if (message.equals(ConfirmConstants.CONFIRM)) {
+                        if (message.equals(StringConstants.CONFIRM)) {
                             represent.confirmLogin(true);
                         } else represent.confirmLogin(false);
                         currentState = State.IDLE;
