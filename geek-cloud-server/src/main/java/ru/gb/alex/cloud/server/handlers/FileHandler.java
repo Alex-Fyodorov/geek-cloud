@@ -116,6 +116,11 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                         ctx.writeAndFlush(OutMessageType.LIST + username);
                         currentState = State.IDLE;
                     }
+                    if (command == CommandForServer.EXIT) {
+                        currentState = State.IDLE;
+                        ctx.channel().close();
+                        logger.info("The client " + username + " has disconnected.");
+                    }
                 }
 
                 if (currentState == State.GET_FILE) {
@@ -144,6 +149,7 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
         if (firstByte == CommandForServer.RENAME.getFirstMessageByte()) return true;
         if (firstByte == CommandForServer.DELETE.getFirstMessageByte()) return true;
         if (firstByte == CommandForServer.FILE_LIST.getFirstMessageByte()) return true;
+        if (firstByte == CommandForServer.EXIT.getFirstMessageByte()) return true;
         return false;
     }
 

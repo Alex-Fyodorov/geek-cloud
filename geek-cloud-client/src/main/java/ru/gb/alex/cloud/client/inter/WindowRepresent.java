@@ -10,9 +10,7 @@ import ru.gb.alex.cloud.client.network.Network;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,7 +39,8 @@ public class WindowRepresent extends JFrame implements Represent {
     private final List<String> selectedFiles;
 
     public WindowRepresent() {
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowListenerImpl());
         setLocation(WINDOW_POS_X, WINDOW_POS_Y);
         setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         setTitle("GeekCloud");
@@ -106,7 +105,10 @@ public class WindowRepresent extends JFrame implements Represent {
 
     public void changeLoginButton() {
         btnLogin.setText("Exit");
-        btnLogin.addActionListener(e -> System.exit(0));
+        btnLogin.addActionListener(e -> {
+            RequestSender.sendRequest("", getChannel(), CommandForServer.EXIT);
+            System.exit(0);
+        });
     }
 
     @Override
@@ -213,7 +215,6 @@ public class WindowRepresent extends JFrame implements Represent {
     }
 }
 
-// TODO сделать выход, не вызывающий ошибок
 // TODO удаление последней строки в таблице приводит к ошибке
 
 /*

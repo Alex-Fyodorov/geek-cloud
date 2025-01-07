@@ -8,7 +8,8 @@ public enum CommandForServer {
     SEND_FILE((byte) 22),
     RENAME((byte) 23),
     DELETE((byte) 24),
-    FILE_LIST((byte) 25);
+    FILE_LIST((byte) 25),
+    EXIT((byte) 30);
 
     private byte firstMessageByte;
 
@@ -28,6 +29,7 @@ public enum CommandForServer {
         if (b == RENAME.firstMessageByte) return RENAME;
         if (b == DELETE.firstMessageByte) return DELETE;
         if (b == FILE_LIST.firstMessageByte) return FILE_LIST;
+        if (b == EXIT.firstMessageByte) return EXIT;
         return IDLE;
     }
 }

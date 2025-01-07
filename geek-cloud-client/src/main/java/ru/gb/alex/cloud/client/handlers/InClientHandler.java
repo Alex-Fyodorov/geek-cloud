@@ -18,7 +18,6 @@ import java.util.concurrent.Executors;
 
 public class InClientHandler extends ChannelInboundHandlerAdapter {
 
-
     Logger logger = LogManager.getLogger(InClientHandler.class);
 
     public enum State {
@@ -50,7 +49,6 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
                     byte firstByte = buf.readByte();
                     if (checkFirstByte(firstByte)) {
                         command = CommandForClient.getDataTypeFromByte(firstByte);
-                        System.out.println("============ " + command);
                         currentState = State.GET_MESSAGE;
                     } else {
                         logger.info("ERROR: Invalid first byte - " + firstByte);
