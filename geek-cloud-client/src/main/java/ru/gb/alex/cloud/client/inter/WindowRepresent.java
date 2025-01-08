@@ -118,25 +118,34 @@ public class WindowRepresent extends JFrame implements Represent {
 
     @Override
     public void showServerFileList(String message) {
-        String[][] fileList = Arrays.stream(message.split("\\s"))
-                .map(f -> f.split("//"))
-                .toArray(String[][]::new);
+        String[][] fileList;
+        if (message.equals(StringConstants.EMPTY_LIST)) {
+            fileList = new String[0][0];
+        } else {
+            fileList = Arrays.stream(message.split("\\s"))
+                    .map(f -> f.split("//"))
+                    .toArray(String[][]::new);
+        }
         modelServer.setData(fileList);
         modelServer.fireTableDataChanged();
     }
 
     @Override
     public void showClientFileList() {
+        String[][] fileList;
         File[] filesInClientDir = new File(StringConstants.CLIENT_STORAGE).listFiles();
         if (filesInClientDir != null && filesInClientDir.length > 0) {
-            String[][] fileList = Arrays.stream(filesInClientDir)
+            fileList = Arrays.stream(filesInClientDir)
                     .collect(Collectors.toMap(File::getName, File::length))
                     .entrySet().stream()
                     .map(e -> new String[]{e.getKey(), String.valueOf(e.getValue())})
                     .toArray(String[][]::new);
-            modelClient.setData(fileList);
-            modelClient.fireTableDataChanged();
+
+        } else {
+            fileList = new String[0][0];
         }
+        modelClient.setData(fileList);
+        modelClient.fireTableDataChanged();
     }
 
     @Override
@@ -214,11 +223,3 @@ public class WindowRepresent extends JFrame implements Represent {
         return Network.getInstance().getCurrentChannel();
     }
 }
-
-// TODO удаление последней строки в таблице приводит к ошибке
-
-/*
-Проблемы:
-1. На данный момент приложение передаёт только файлы до 4,3 Гб,
-   после чего жалуется, что закончилась память.
- */

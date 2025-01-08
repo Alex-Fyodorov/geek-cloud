@@ -56,7 +56,7 @@ public class OutServerHandler extends ChannelOutboundHandlerAdapter {
                             .collect(Collectors.joining(" "));
                     sendText(ctx, fileList, CommandForClient.FILE_LIST);
                 } else {
-                    sendText(ctx, "", CommandForClient.FILE_LIST);
+                    sendText(ctx, StringConstants.EMPTY_LIST, CommandForClient.FILE_LIST);
                 }
             }
 
