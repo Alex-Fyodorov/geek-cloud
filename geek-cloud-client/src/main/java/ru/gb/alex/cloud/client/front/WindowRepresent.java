@@ -129,7 +129,7 @@ public class WindowRepresent extends JFrame implements Represent {
         if (message.equals(StringConstants.EMPTY_LIST)) {
             fileList = new String[0][0];
         } else {
-            fileList = Arrays.stream(message.split("\\s"))
+            fileList = Arrays.stream(message.split("\\|"))
                     .map(f -> f.split("//"))
                     .toArray(String[][]::new);
         }

@@ -53,7 +53,7 @@ public class OutServerHandler extends ChannelOutboundHandlerAdapter {
                             .collect(Collectors.toMap(File::getName, File::length))
                             .entrySet().stream()
                             .map(e -> e.getKey() + "//" + e.getValue())
-                            .collect(Collectors.joining(" "));
+                            .collect(Collectors.joining("|"));
                     sendText(ctx, fileList, CommandForClient.FILE_LIST);
                 } else {
                     sendText(ctx, StringConstants.EMPTY_LIST, CommandForClient.FILE_LIST);
