@@ -11,7 +11,7 @@ public enum CommandForServer {
     FILE_LIST((byte) 25),
     EXIT((byte) 30);
 
-    private byte firstMessageByte;
+    private final byte firstMessageByte;
 
     public byte getFirstMessageByte() {
         return firstMessageByte;

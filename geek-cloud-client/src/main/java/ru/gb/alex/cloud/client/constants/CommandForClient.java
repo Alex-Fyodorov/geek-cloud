@@ -7,7 +7,7 @@ public enum CommandForClient {
     FILE_LIST((byte) 21),
     FILE((byte) 25);
 
-    private byte firstMessageByte;
+    private final byte firstMessageByte;
 
     CommandForClient(byte firstMessageByte) {
         this.firstMessageByte = firstMessageByte;

@@ -50,7 +50,7 @@ public class OutServerHandler extends ChannelOutboundHandlerAdapter {
                         StringConstants.SERVER_STORAGE + username).listFiles();
                 if (filesInCurrentDir != null && filesInCurrentDir.length > 0) {
                     String fileList = Arrays.stream(filesInCurrentDir)
-                            .collect(Collectors.toMap(f -> f.getName(), f -> f.length()))
+                            .collect(Collectors.toMap(File::getName, File::length))
                             .entrySet().stream()
                             .map(e -> e.getKey() + "//" + e.getValue())
                             .collect(Collectors.joining(" "));

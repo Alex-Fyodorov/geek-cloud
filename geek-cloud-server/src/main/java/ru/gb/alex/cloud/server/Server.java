@@ -9,9 +9,9 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.gb.alex.cloud.server.databases.AuthService;
-import ru.gb.alex.cloud.server.databases.MySQLAuthService;
-import ru.gb.alex.cloud.server.databases.SessionFactoryUtils;
+import ru.gb.alex.cloud.server.services.AuthService;
+import ru.gb.alex.cloud.server.services.MySQLAuthService;
+import ru.gb.alex.cloud.server.utils.SessionFactoryUtils;
 import ru.gb.alex.cloud.server.handlers.AuthHandler;
 import ru.gb.alex.cloud.server.handlers.OutServerHandler;
 

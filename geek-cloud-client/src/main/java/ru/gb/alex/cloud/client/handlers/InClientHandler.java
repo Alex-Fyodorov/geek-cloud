@@ -7,8 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.gb.alex.cloud.client.constants.CommandForClient;
 import ru.gb.alex.cloud.client.constants.StringConstants;
-import ru.gb.alex.cloud.client.inter.Represent;
-import ru.gb.alex.cloud.client.inter.WindowRepresent;
+import ru.gb.alex.cloud.client.front.Represent;
 import ru.gb.alex.cloud.client.services.FileService;
 import ru.gb.alex.cloud.client.services.MessageService;
 
@@ -18,27 +17,27 @@ import java.util.concurrent.Executors;
 
 public class InClientHandler extends ChannelInboundHandlerAdapter {
 
+    private final ExecutorService executorService;
+    private final MessageService messageService;
+    private final FileService fileService;
+    private final Represent represent;
+    private static final String CLIENT_STORAGE = "./client_storage/";
+    private State currentState = State.IDLE;
+    private CommandForClient command;
+    private String message;
+
     Logger logger = LogManager.getLogger(InClientHandler.class);
 
     public enum State {
         IDLE, GET_MESSAGE, MESSAGE_END, GET_FILE
     }
 
-    public InClientHandler() {
+    public InClientHandler(Represent represent) {
+        this.represent = represent;
         executorService = Executors.newSingleThreadExecutor();
         messageService = new MessageService();
         fileService = new FileService();
-        represent = new WindowRepresent();
     }
-
-    private final Represent represent;
-    private final ExecutorService executorService;
-    private final MessageService messageService;
-    private final FileService fileService;
-    private static final String CLIENT_STORAGE = "./client_storage/";
-    private State currentState = State.IDLE;
-    private CommandForClient command;
-    private String message;
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -74,9 +73,7 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
                         represent.showMessage(message);
                         currentState = State.IDLE;
                     } else if (command == CommandForClient.CONFIRM) {
-                        if (message.equals(StringConstants.CONFIRM)) {
-                            represent.confirmLogin(true);
-                        } else represent.confirmLogin(false);
+                        represent.confirmLogin(message.equals(StringConstants.CONFIRM));
                         currentState = State.IDLE;
                     }
                 }

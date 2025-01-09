@@ -8,17 +8,11 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import ru.gb.alex.cloud.client.handlers.InClientHandler;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;
 
 public class Network {
-    private static Network ourInstance = new Network();
-
-    public static Network getInstance() {
-        return ourInstance;
-    }
 
     public Network() {
     }
@@ -39,9 +33,7 @@ public class Network {
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel socketChannel) {
-                            socketChannel.pipeline().addLast(
-                                    new InClientHandler()
-                            );
+                            socketChannel.pipeline().addLast();
                             currentChannel = (Channel) socketChannel;
                         }
                     });

@@ -4,17 +4,24 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
 import ru.gb.alex.cloud.client.constants.CommandForServer;
+import ru.gb.alex.cloud.client.network.Network;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.CountDownLatch;
 
 public class RequestSender {
 
-    public static void sendFile(Path path, Channel channel,
-                                ChannelFutureListener finishListener) throws IOException {
+    private final Network network;
+    private final Channel channel;
+
+    public RequestSender(Network network) {
+        this.network = network;
+        channel = network.getCurrentChannel();
+    }
+
+    public void sendFile(Path path, ChannelFutureListener finishListener) throws IOException {
         FileRegion region = new DefaultFileRegion(path.toFile(), 0, Files.size(path));
         // Альтернативный вариант не с файлом, а с каналом.
         //FileRegion region = new DefaultFileRegion(new FileInputStream(path.toFile()).getChannel(), 0, Files.size(path));
@@ -34,8 +41,7 @@ public class RequestSender {
         }
     }
 
-    public static void sendAuth(String username, String password, Channel channel,
-                                CommandForServer command) {
+    public void sendAuth(String username, String password, CommandForServer command) {
         byte[] usernameBytes = username.getBytes(StandardCharsets.UTF_8);
         byte[] passBytes = password.getBytes(StandardCharsets.UTF_8);
         ByteBuf buf = ByteBufAllocator.DEFAULT.directBuffer(1 + 4 + usernameBytes.length + 4 + passBytes.length);
@@ -48,7 +54,7 @@ public class RequestSender {
         channel.writeAndFlush(buf);
     }
 
-    public static void sendRequest(String filename, Channel channel, CommandForServer command) {
+    public void sendRequest(String filename, CommandForServer command) {
         byte[] filenameBytes = filename.getBytes(StandardCharsets.UTF_8);
         ByteBuf buf = ByteBufAllocator.DEFAULT.directBuffer(1 + 4 + filenameBytes.length);
 
@@ -56,5 +62,9 @@ public class RequestSender {
         buf.writeInt(filenameBytes.length);
         buf.writeBytes(filenameBytes);
         channel.writeAndFlush(buf);
+    }
+
+    public void exit() {
+        network.stop();
     }
 }

@@ -1,5 +1,0 @@
-nick3
-/l nick1 nick2 nick3
-Для nick1 (личн.):  aksfhaksdfhasfkj
-nick1 (личн.):  fuck you
-/end

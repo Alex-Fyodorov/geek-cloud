@@ -5,7 +5,7 @@ public enum ButtonsCommand {
     MOVE("move"),
     DELETE("delete");
 
-    private String message;
+    private final String message;
 
     ButtonsCommand(String message) {
         this.message = message;

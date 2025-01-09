@@ -12,8 +12,6 @@
   <modules>
     <module>geek-cloud-server</module>
     <module>geek-cloud-client</module>
-    <module>chat</module>
-    <module>netty-examples</module>
   </modules>
 
   <properties>

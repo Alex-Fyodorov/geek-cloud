@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
 import ru.gb.alex.cloud.server.constants.CommandForServer;
 import ru.gb.alex.cloud.server.constants.StringConstants;
 import ru.gb.alex.cloud.server.constants.OutMessageType;
-import ru.gb.alex.cloud.server.databases.AuthService;
+import ru.gb.alex.cloud.server.services.AuthService;
 import ru.gb.alex.cloud.server.services.MessageService;
 
 import java.io.IOException;
@@ -70,7 +70,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
 
                 if (username != null && password != null) {
                     if (messageType == CommandForServer.AUTH) {
-                        if (authService.authentification(username, password)) {
+                        if (authService.authentication(username, password)) {
                             logger.info("The client " + username + " has connected.");
                             ctx.writeAndFlush(OutMessageType.CONFIRM + StringConstants.CONFIRM);
                             ctx.writeAndFlush(String.format("%sWelcome %s!", OutMessageType.MESSAGE, username));
