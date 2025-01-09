@@ -155,4 +155,10 @@ public class ButtonsListener {
         }
         return exceptionList;
     }
+
+    public void exit() {
+        mainWindow.getRequestSender().sendRequest("", CommandForServer.EXIT);
+        mainWindow.getRequestSender().exit();
+        System.exit(0);
+    }
 }

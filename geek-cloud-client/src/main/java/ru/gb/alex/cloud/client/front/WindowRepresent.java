@@ -111,11 +111,7 @@ public class WindowRepresent extends JFrame implements Represent {
 
     public void changeLoginButton() {
         btnLogin.setText("Exit");
-        btnLogin.addActionListener(e -> {
-            requestSender.sendRequest("", CommandForServer.EXIT);
-            requestSender.exit();
-            System.exit(0);
-        });
+        btnLogin.addActionListener(e -> buttonsListener.exit());
     }
 
     @Override
