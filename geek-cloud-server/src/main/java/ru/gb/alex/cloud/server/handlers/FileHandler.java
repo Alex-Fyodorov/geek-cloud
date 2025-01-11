@@ -19,24 +19,29 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class FileHandler extends ChannelInboundHandlerAdapter {
+
+    private enum State {
+        IDLE, GET_MESSAGE, MESSAGE_END, GET_FILE
+    }
+
     private final String username;
     private final ExecutorService executorService;
     private final MessageService messageService;
     private final FileService fileService;
-    Logger logger = LogManager.getLogger(FileHandler.class);
+    private final Logger logger;
+    private State currentState;
+    private CommandForServer command;
+    private String message;
+    private String path;
 
     public FileHandler(String username) {
         this.username = username;
         executorService = Executors.newSingleThreadExecutor();
         messageService = new MessageService();
         fileService = new FileService();
+        logger = LogManager.getLogger(FileHandler.class);
+        currentState = State.IDLE;
     }
-
-    public enum State {IDLE, GET_MESSAGE, MESSAGE_END, GET_FILE}
-    private State currentState = State.IDLE;
-    private CommandForServer command;
-    private String message;
-    private String path;
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {

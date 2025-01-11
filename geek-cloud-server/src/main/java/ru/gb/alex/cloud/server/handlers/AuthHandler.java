@@ -16,24 +16,26 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class AuthHandler extends ChannelInboundHandlerAdapter {
-    private final AuthService authService;
-    private final MessageService messageService;
-
-    public AuthHandler(AuthService authService) {
-        this.authService = authService;
-        messageService = new MessageService();
-    }
-
-    Logger logger = LogManager.getLogger(AuthHandler.class);
 
     private enum State {
         IDLE, GET_NAME, GET_PASSWORD
     }
 
-    private State currentState = State.IDLE;
-    private CommandForServer messageType = CommandForServer.IDLE;
+    private final AuthService authService;
+    private final MessageService messageService;
+    private final Logger logger;
+    private State currentState;
+    private CommandForServer messageType;
     private String username;
     private String password;
+
+    public AuthHandler(AuthService authService) {
+        this.authService = authService;
+        messageService = new MessageService();
+        logger = LogManager.getLogger(AuthHandler.class);
+        currentState = State.IDLE;
+        messageType = CommandForServer.IDLE;
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {

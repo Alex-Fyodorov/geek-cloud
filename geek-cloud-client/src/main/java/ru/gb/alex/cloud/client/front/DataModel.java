@@ -3,8 +3,8 @@ package ru.gb.alex.cloud.client.front;
 import javax.swing.table.AbstractTableModel;
 
 public class DataModel extends AbstractTableModel {
-    private String[] columnNames = null;
-    private String[][] data = null;
+    private final String[] columnNames;
+    private String[][] data;
 
     DataModel(String[][] data, String[] columnNames) {
         this.data = data;
@@ -34,5 +34,4 @@ public class DataModel extends AbstractTableModel {
     public String getValueAt(int row, int column) {
         return data[row][column];
     }
-
 }

@@ -14,10 +14,14 @@ public class FileService {
         FILE_LENGTH, FILE
     }
 
-    private State currentState = State.FILE_LENGTH;
+    private State currentState;
     private long fileLength;
     private long receivedFileLength;
     private BufferedOutputStream out;
+
+    public FileService() {
+        currentState = State.FILE_LENGTH;
+    }
 
     public void getFile(ByteBuf buf, String path, FileCallback fileCallback) throws IOException {
 

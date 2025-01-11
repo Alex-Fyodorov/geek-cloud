@@ -23,12 +23,12 @@ import java.util.stream.Collectors;
 
 public class OutServerHandler extends ChannelOutboundHandlerAdapter {
     private final ExecutorService executorService;
+    private final Logger logger;
 
     public OutServerHandler() {
         executorService = Executors.newSingleThreadExecutor();
+        logger = LogManager.getLogger(OutServerHandler.class);
     }
-
-    Logger logger = LogManager.getLogger(OutServerHandler.class);
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {

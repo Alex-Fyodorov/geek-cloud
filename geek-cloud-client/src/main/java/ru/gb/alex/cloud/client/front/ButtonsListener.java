@@ -157,7 +157,7 @@ public class ButtonsListener {
     }
 
     public void exit() {
-        mainWindow.getRequestSender().sendRequest("", CommandForServer.EXIT);
+        mainWindow.getRequestSender().sendRequest("*", CommandForServer.EXIT);
         mainWindow.getRequestSender().exit();
         System.exit(0);
     }

@@ -17,26 +17,26 @@ import java.util.concurrent.Executors;
 
 public class InClientHandler extends ChannelInboundHandlerAdapter {
 
+    private enum State {
+        IDLE, GET_MESSAGE, MESSAGE_END, GET_FILE
+    }
+
     private final ExecutorService executorService;
     private final MessageService messageService;
     private final FileService fileService;
     private final Represent represent;
-    private static final String CLIENT_STORAGE = "./client_storage/";
-    private State currentState = State.IDLE;
+    private final Logger logger;
+    private State currentState;
     private CommandForClient command;
     private String message;
-
-    Logger logger = LogManager.getLogger(InClientHandler.class);
-
-    public enum State {
-        IDLE, GET_MESSAGE, MESSAGE_END, GET_FILE
-    }
 
     public InClientHandler(Represent represent) {
         this.represent = represent;
         executorService = Executors.newSingleThreadExecutor();
         messageService = new MessageService();
         fileService = new FileService();
+        logger = LogManager.getLogger(InClientHandler.class);
+        currentState = State.IDLE;
     }
 
     @Override
@@ -82,7 +82,7 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
 
                 if (currentState == State.GET_FILE) {
                     try {
-                        fileService.getFile(buf, CLIENT_STORAGE + message, (() -> {
+                        fileService.getFile(buf, StringConstants.CLIENT_STORAGE + message, (() -> {
                             represent.showClientFileList();
                             currentState = State.IDLE;
                             logger.info(String.format("File %s received", message));

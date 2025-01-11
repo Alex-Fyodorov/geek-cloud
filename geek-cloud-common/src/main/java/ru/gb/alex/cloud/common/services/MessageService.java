@@ -11,12 +11,17 @@ public class MessageService {
         MESSAGE_LENGTH, MESSAGE
     }
 
-    private State currentState = State.MESSAGE_LENGTH;
+    private State currentState;
     private int messageLength;
     private int currentMessageLength;
     private StringBuilder stringBuilder;
-    private final byte[] bytes = new byte[4];
+    private final byte[] bytes;
     private int index = 0;
+
+    public MessageService() {
+        currentState = State.MESSAGE_LENGTH;
+        bytes = new byte[4];
+    }
 
     public void readMessage(ByteBuf buf, MessageCallback messageCallback) {
 

@@ -21,7 +21,7 @@ public class WindowListenerImpl implements WindowListener {
 
     @Override
     public void windowClosing(WindowEvent e) {
-        requestSender.sendRequest("", CommandForServer.EXIT);
+        requestSender.sendRequest("*", CommandForServer.EXIT);
         requestSender.exit();
         System.exit(0);
     }
