@@ -13,14 +13,6 @@ import java.nio.file.Path;
 
 public class RequestSender {
 
-    private final Network network;
-    private final Channel channel;
-
-    public RequestSender(Network network) {
-        this.network = network;
-        channel = network.getCurrentChannel();
-    }
-
     public void sendFile(Path path, ChannelFutureListener finishListener) throws IOException {
         FileRegion region = new DefaultFileRegion(path.toFile(), 0, Files.size(path));
         // Альтернативный вариант не с файлом, а с каналом.
@@ -33,9 +25,9 @@ public class RequestSender {
         buf.writeInt(path.getFileName().toString().length());
         buf.writeBytes(fileNameBytes);
         buf.writeLong(Files.size(path));
-        channel.writeAndFlush(buf);
+        getChannel().writeAndFlush(buf);
 
-        ChannelFuture transferOperationFuture = channel.writeAndFlush(region);
+        ChannelFuture transferOperationFuture = getChannel().writeAndFlush(region);
         if (finishListener != null) {
             transferOperationFuture.addListener(finishListener);
         }
@@ -51,7 +43,7 @@ public class RequestSender {
         buf.writeBytes(usernameBytes);
         buf.writeInt(passBytes.length);
         buf.writeBytes(passBytes);
-        channel.writeAndFlush(buf);
+        getChannel().writeAndFlush(buf);
     }
 
     public void sendRequest(String filename, CommandForServer command) {
@@ -61,10 +53,14 @@ public class RequestSender {
         buf.writeByte(command.getFirstMessageByte());
         buf.writeInt(filenameBytes.length);
         buf.writeBytes(filenameBytes);
-        channel.writeAndFlush(buf);
+        getChannel().writeAndFlush(buf);
+    }
+
+    private Channel getChannel() {
+        return Network.getInstance().getCurrentChannel();
     }
 
     public void exit() {
-        network.stop();
+        Network.getInstance().stop();
     }
 }
