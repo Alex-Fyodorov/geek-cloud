@@ -51,6 +51,8 @@ public class InClientHandler extends ChannelInboundHandlerAdapter {
                         currentState = State.GET_MESSAGE;
                     } else {
                         logger.info("ERROR: Invalid first byte - " + firstByte);
+                        buf.release();
+                        break;
                     }
                 }
 

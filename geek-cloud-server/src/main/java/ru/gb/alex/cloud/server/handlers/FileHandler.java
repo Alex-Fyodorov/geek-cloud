@@ -53,6 +53,8 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
                                 OutMessageType.MESSAGE, firstByte));
                         logger.info(String.format("ERROR: Invalid first byte: %d, user: %s",
                                 firstByte, username));
+                        buf.release();
+                        break;
                     }
                 }
 
