@@ -1,6 +1,6 @@
 package ru.gb.alex.cloud.client.front;
 
-import ru.gb.alex.cloud.client.constants.CommandForServer;
+import ru.gb.alex.cloud.common.constants.CommandForServer;
 
 import javax.swing.*;
 import java.awt.*;

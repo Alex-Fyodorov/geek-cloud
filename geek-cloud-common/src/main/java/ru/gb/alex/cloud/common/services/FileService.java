@@ -1,7 +1,7 @@
-package ru.gb.alex.cloud.client.services;
+package ru.gb.alex.cloud.common.services;
 
 import io.netty.buffer.ByteBuf;
-import ru.gb.alex.cloud.client.callbacks.FileCallback;
+import ru.gb.alex.cloud.common.callbacks.FileCallback;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -39,7 +39,7 @@ public class FileService {
                         currentState = State.FILE_LENGTH;
                         out.close();
                         fileCallback.callback();
-                        break;
+                        return;
                     }
                 }
             } catch (IOException e) {

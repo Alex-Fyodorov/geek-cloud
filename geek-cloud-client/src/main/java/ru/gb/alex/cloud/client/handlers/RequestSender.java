@@ -3,8 +3,8 @@ package ru.gb.alex.cloud.client.handlers;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
-import ru.gb.alex.cloud.client.constants.CommandForServer;
 import ru.gb.alex.cloud.client.network.Network;
+import ru.gb.alex.cloud.common.constants.CommandForServer;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

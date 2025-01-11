@@ -5,9 +5,9 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.gb.alex.cloud.server.constants.CommandForClient;
+import ru.gb.alex.cloud.common.constants.CommandForClient;
+import ru.gb.alex.cloud.common.constants.StringConstants;
 import ru.gb.alex.cloud.server.constants.OutMessageType;
-import ru.gb.alex.cloud.server.constants.StringConstants;
 
 import java.io.File;
 import java.io.IOException;

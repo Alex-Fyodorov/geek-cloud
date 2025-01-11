@@ -5,11 +5,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.gb.alex.cloud.client.constants.CommandForClient;
-import ru.gb.alex.cloud.client.constants.StringConstants;
 import ru.gb.alex.cloud.client.front.Represent;
-import ru.gb.alex.cloud.client.services.FileService;
-import ru.gb.alex.cloud.client.services.MessageService;
+import ru.gb.alex.cloud.common.constants.CommandForClient;
+import ru.gb.alex.cloud.common.constants.StringConstants;
+import ru.gb.alex.cloud.common.services.FileService;
+import ru.gb.alex.cloud.common.services.MessageService;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;

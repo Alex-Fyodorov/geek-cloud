@@ -1,7 +1,7 @@
-package ru.gb.alex.cloud.client.services;
+package ru.gb.alex.cloud.common.services;
 
 import io.netty.buffer.ByteBuf;
-import ru.gb.alex.cloud.client.callbacks.MessageCallback;
+import ru.gb.alex.cloud.common.callbacks.MessageCallback;
 
 import java.nio.ByteBuffer;
 
@@ -42,7 +42,7 @@ public class MessageService {
                 if (currentMessageLength == messageLength) {
                     currentState = State.MESSAGE_LENGTH;
                     messageCallback.callback(stringBuilder.toString());
-                    break;
+                    return;
                 }
             }
         }

@@ -1,7 +1,7 @@
 package ru.gb.alex.cloud.client.front;
 
-import ru.gb.alex.cloud.client.constants.CommandForServer;
 import ru.gb.alex.cloud.client.handlers.RequestSender;
+import ru.gb.alex.cloud.common.constants.CommandForServer;
 
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;

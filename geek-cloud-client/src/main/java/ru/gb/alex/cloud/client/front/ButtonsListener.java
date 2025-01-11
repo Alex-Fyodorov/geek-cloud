@@ -3,8 +3,8 @@ package ru.gb.alex.cloud.client.front;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.gb.alex.cloud.client.constants.ButtonsCommand;
-import ru.gb.alex.cloud.client.constants.CommandForServer;
-import ru.gb.alex.cloud.client.constants.StringConstants;
+import ru.gb.alex.cloud.common.constants.CommandForServer;
+import ru.gb.alex.cloud.common.constants.StringConstants;
 
 import javax.swing.*;
 import java.io.IOException;
