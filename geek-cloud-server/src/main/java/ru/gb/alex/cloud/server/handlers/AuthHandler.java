@@ -109,7 +109,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void mutatePipeline(ChannelHandlerContext ctx, ByteBuf buf, String username) {
-        ctx.pipeline().addLast(new FileHandler(username));
+        ctx.pipeline().addLast(new RequestHandler(username));
         ctx.fireChannelRead(buf);
         ctx.pipeline().remove(this);
     }

@@ -18,6 +18,7 @@ public class FileService {
     private long fileLength;
     private long receivedFileLength;
     private BufferedOutputStream out;
+    private byte[] bytes;
 
     public FileService() {
         currentState = State.FILE_LENGTH;
@@ -36,14 +37,27 @@ public class FileService {
 
         if (currentState == State.FILE) {
             try {
-                while (buf.readableBytes() > 0) {
-                    out.write(buf.readByte());
-                    receivedFileLength++;
+                int capacity = buf.readableBytes();
+                if (fileLength - receivedFileLength > capacity) {
+                    bytes = new byte[capacity];
+                    buf.readBytes(bytes);
+                    out.write(bytes);
+                    receivedFileLength += capacity;
                     if (fileLength == receivedFileLength) {
                         currentState = State.FILE_LENGTH;
                         out.close();
                         fileCallback.callback();
-                        return;
+                    }
+                } else {
+                    while (buf.readableBytes() > 0) {
+                        out.write(buf.readByte());
+                        receivedFileLength++;
+                        if (fileLength == receivedFileLength) {
+                            currentState = State.FILE_LENGTH;
+                            out.close();
+                            fileCallback.callback();
+                            return;
+                        }
                     }
                 }
             } catch (IOException e) {

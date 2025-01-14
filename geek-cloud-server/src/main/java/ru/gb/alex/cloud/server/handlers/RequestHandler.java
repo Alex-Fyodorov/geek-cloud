@@ -18,7 +18,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class FileHandler extends ChannelInboundHandlerAdapter {
+public class RequestHandler extends ChannelInboundHandlerAdapter {
 
     private enum State {
         IDLE, GET_MESSAGE, MESSAGE_END, GET_FILE
@@ -34,12 +34,12 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
     private String message;
     private String path;
 
-    public FileHandler(String username) {
+    public RequestHandler(String username) {
         this.username = username;
         executorService = Executors.newSingleThreadExecutor();
         messageService = new MessageService();
         fileService = new FileService();
-        logger = LogManager.getLogger(FileHandler.class);
+        logger = LogManager.getLogger(RequestHandler.class);
         currentState = State.IDLE;
     }
 
