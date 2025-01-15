@@ -43,11 +43,6 @@ public class FileService {
                     buf.readBytes(bytes);
                     out.write(bytes);
                     receivedFileLength += capacity;
-                    if (fileLength == receivedFileLength) {
-                        currentState = State.FILE_LENGTH;
-                        out.close();
-                        fileCallback.callback();
-                    }
                 } else {
                     while (buf.readableBytes() > 0) {
                         out.write(buf.readByte());
